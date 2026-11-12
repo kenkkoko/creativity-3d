@@ -651,6 +651,14 @@
             "title": "Bridge",
             "type": "array"
           },
+          "bridge_positions": {
+            "description": "聯想橋中間概念的 3D 座標，與 bridge 一一對應",
+            "items": {
+              "$ref": "#/$defs/Point3D"
+            },
+            "title": "Bridge Positions",
+            "type": "array"
+          },
           "reason": {
             "default": "",
             "title": "Reason",

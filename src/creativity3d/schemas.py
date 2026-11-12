@@ -181,6 +181,9 @@ class ScoredAssociation(Strict):
     rarity: Score01 | None = Field(default=None, description="越接近 1 越少人想到；資料不足時為 null")
     outlier: bool = Field(description="距離是否為極端值（向量層標記）")
     bridge: list[str] = Field(default_factory=list)
+    bridge_positions: list[Point3D] = Field(
+        default_factory=list, description="聯想橋中間概念的 3D 座標，與 bridge 一一對應"
+    )
     reason: str = ""
     position: Point3D = Field(description="3D 座標；半徑 = 真實語義距離，方向由投影決定")
 

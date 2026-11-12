@@ -1,0 +1,43 @@
+# Prompt injection 偵測 regex（Python re，IGNORECASE）
+# 一行一個；以 # 開頭為註解。
+# 比對對象：NFKC 正規化、轉小寫的文字，以及「去掉所有空白」的版本，任一命中即判定。
+# 英文 pattern 請用 \s* 連接單字，才能同時命中去空白的版本。
+
+# --- 中文：忽略／無視 指示 ---
+(忽略|無視|忽視|不要理會?|別理).{0,8}(指示|指令|規則|以上|上面|前面|先前|之前|設定|提示|限制|要求)
+(跳過|忘記|忘掉|拋開).{0,8}(指示|指令|規則|系統設定|提示詞)
+(以上|上面|前面|先前|之前).{0,4}(指示|指令|規則|設定).{0,4}(作廢|無效|取消|不算)
+(新的|以下是|現在的)(指示|指令|規則)
+# --- 中文：角色改寫 ---
+你現在是
+你從現在開始
+你的新(角色|身分|身份|任務)
+(請|你)?扮演(一個|一位|一名|成|為|你|我|ai|助理|助手|老師|評審|系統)
+角色設定
+系統(提示|指令|訊息|設定)
+開發者模式
+# --- 中文：要求分數 ---
+給.{0,6}(滿分|100分|一百分|最高分)
+(打|評|算|判).{0,4}(滿分|100分|一百分|最高分)
+(全部|全都|每一?題|每則|所有).{0,4}(滿分|100分|一百分|合理|reasonable)
+(都|全)(判|算|給)?(合理|reasonable)
+# --- 英文 ---
+ignore\s*(all|any|the|previous|prior|above|earlier|your)\s*(previous|prior|above)?\s*(instructions?|rules?|prompts?)
+ignore\s*(all|previous|prior|above)
+disregard\s*(all|previous|prior|the|above)
+forget\s*(all|previous|everything|your)\s*(instructions?|rules?)?
+system\s*prompt
+\bprompt\b
+jailbreak
+\bact\s*as\b
+developer\s*mode
+\bdan\s*mode
+you\s*are\s*now
+pretend\s*(to\s*be|you)
+give\s*(me|us|it|all|every)?\s*.{0,10}(full\s*marks?|100\s*points?|max\s*score)
+\bscore\s*=\s*\d
+# --- 標記／程式碼區塊 ---
+<\s*/?\s*system\s*>
+<\s*/?\s*(user|assistant|answers?|instructions?)\s*>
+```
+\[\s*/?\s*(inst|system)\s*\]

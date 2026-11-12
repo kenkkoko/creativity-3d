@@ -1,0 +1,128 @@
+[
+  {
+    "source": "preset",
+    "response_count": 3,
+    "ready": true,
+    "id": "s01",
+    "word": "時間",
+    "abstraction_level": 1,
+    "source_note": "替代論文的 As（像），抽象程度待查證"
+  },
+  {
+    "source": "preset",
+    "response_count": 0,
+    "ready": true,
+    "id": "s02",
+    "word": "無限",
+    "abstraction_level": 2,
+    "source_note": "MRC Infinity 具象度 204"
+  },
+  {
+    "source": "preset",
+    "response_count": 12,
+    "ready": true,
+    "id": "s03",
+    "word": "希望",
+    "abstraction_level": 3,
+    "source_note": "MRC Hope 具象度 261"
+  },
+  {
+    "source": "preset",
+    "response_count": 1,
+    "ready": true,
+    "id": "s04",
+    "word": "幫忙",
+    "abstraction_level": 4,
+    "source_note": "MRC Help 具象度 320"
+  },
+  {
+    "source": "preset",
+    "response_count": 5,
+    "ready": true,
+    "id": "s05",
+    "word": "驚嚇",
+    "abstraction_level": 5,
+    "source_note": "MRC Scare 具象度 380"
+  },
+  {
+    "source": "preset",
+    "response_count": 7,
+    "ready": true,
+    "id": "s06",
+    "word": "藝術",
+    "abstraction_level": 6,
+    "source_note": "MRC Art 具象度 440"
+  },
+  {
+    "source": "preset",
+    "response_count": 9,
+    "ready": true,
+    "id": "s07",
+    "word": "紅色",
+    "abstraction_level": 7,
+    "source_note": "MRC Red 具象度 501"
+  },
+  {
+    "source": "preset",
+    "response_count": 4,
+    "ready": true,
+    "id": "s08",
+    "word": "國王",
+    "abstraction_level": 8,
+    "source_note": "MRC King 具象度 559"
+  },
+  {
+    "source": "preset",
+    "response_count": 24,
+    "ready": true,
+    "id": "s09",
+    "word": "蘋果",
+    "abstraction_level": 9,
+    "source_note": "MRC Apple 具象度 620"
+  },
+  {
+    "source": "preset",
+    "response_count": 6,
+    "ready": true,
+    "id": "s10",
+    "word": "牛奶",
+    "abstraction_level": 10,
+    "source_note": "MRC Milk 具象度 670"
+  },
+  {
+    "id": "c101",
+    "word": "海浪",
+    "source": "community",
+    "abstraction_level": null,
+    "source_note": "",
+    "response_count": 8,
+    "ready": true
+  },
+  {
+    "id": "c102",
+    "word": "夜市",
+    "source": "community",
+    "abstraction_level": null,
+    "source_note": "",
+    "response_count": 21,
+    "ready": true
+  },
+  {
+    "id": "c103",
+    "word": "孤獨",
+    "source": "community",
+    "abstraction_level": null,
+    "source_note": "",
+    "response_count": 3,
+    "ready": true
+  },
+  {
+    "id": "m201",
+    "word": "珍珠奶茶",
+    "source": "mine",
+    "abstraction_level": null,
+    "source_note": "",
+    "response_count": 0,
+    "ready": true
+  }
+]

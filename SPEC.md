@@ -138,6 +138,12 @@
 | `POST /api/consent` | `ConsentRequest` | `ConsentResponse` |
 | `GET /api/cloud/{stimulus_id}` | — | `list[CloudPoint]` + `PoolStats` |
 
+其他端點：`GET /api/config`（作答秒數、百分位門檻）、`GET /api/health`。
+
+匿名身分：`SubmitRequest`、`CreateStimulusRequest`、`PublishStimulusRequest` 的 body 內含 `client_session_id`；
+`GET /api/stimuli`、`GET /api/cloud/{id}`、`POST /api/consent` 以 query 參數 `?client_session_id=` 傳遞。
+所有錯誤一律回傳 `ErrorResponse`（含 422 格式錯誤）。同一筆作答重複同意 → 404「已經分享過」。
+
 LLM Structured Output（Ollama `format=<JSON Schema>`）：
 - `LlmJudgementBatch`：合理性判斷 + 聯想橋
 - `LlmStimulusCheck`：自訂詞是否為可聯想的詞

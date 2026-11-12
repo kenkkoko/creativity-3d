@@ -1,0 +1,1180 @@
+{
+  "submission_id": "mock-sub-0001",
+  "stimulus": {
+    "id": "s09",
+    "word": "蘋果",
+    "source": "preset",
+    "abstraction_level": 9,
+    "source_note": "MRC Apple 具象度 620",
+    "response_count": 24,
+    "ready": true
+  },
+  "associations": [
+    {
+      "index": 0,
+      "text": "水果",
+      "note": null,
+      "rule_flag": "ok",
+      "verdict": "reasonable",
+      "weight": 1.0,
+      "distance": 0.18,
+      "effective_distance": 0.18,
+      "rarity": 0.08,
+      "outlier": false,
+      "bridge": [],
+      "reason": "蘋果是最常見的水果之一",
+      "position": {
+        "x": -0.0749,
+        "y": 0.1198,
+        "z": -0.0662
+      }
+    },
+    {
+      "index": 1,
+      "text": "紅色",
+      "note": null,
+      "rule_flag": "ok",
+      "verdict": "reasonable",
+      "weight": 1.0,
+      "distance": 0.27,
+      "effective_distance": 0.27,
+      "rarity": 0.12,
+      "outlier": false,
+      "bridge": [],
+      "reason": "多數蘋果是紅色的",
+      "position": {
+        "x": -0.0847,
+        "y": -0.1999,
+        "z": -0.0573
+      }
+    },
+    {
+      "index": 2,
+      "text": "果汁",
+      "note": null,
+      "rule_flag": "ok",
+      "verdict": "reasonable",
+      "weight": 1.0,
+      "distance": 0.25,
+      "effective_distance": 0.25,
+      "rarity": 0.21,
+      "outlier": false,
+      "bridge": [
+        "榨汁"
+      ],
+      "reason": "蘋果常被做成果汁",
+      "position": {
+        "x": 0.1761,
+        "y": 0.0537,
+        "z": 0.1642
+      }
+    },
+    {
+      "index": 3,
+      "text": "蘋果派",
+      "note": null,
+      "rule_flag": "ok",
+      "verdict": "reasonable",
+      "weight": 1.0,
+      "distance": 0.22,
+      "effective_distance": 0.22,
+      "rarity": 0.35,
+      "outlier": false,
+      "bridge": [
+        "甜點"
+      ],
+      "reason": "以蘋果為主角的經典甜點",
+      "position": {
+        "x": 0.1091,
+        "y": 0.1384,
+        "z": 0.0812
+      }
+    },
+    {
+      "index": 4,
+      "text": "健康",
+      "note": null,
+      "rule_flag": "ok",
+      "verdict": "reasonable",
+      "weight": 1.0,
+      "distance": 0.41,
+      "effective_distance": 0.41,
+      "rarity": 0.44,
+      "outlier": false,
+      "bridge": [
+        "一天一蘋果"
+      ],
+      "reason": "俗語說一天一蘋果，醫生遠離我",
+      "position": {
+        "x": -0.3521,
+        "y": 0.1446,
+        "z": 0.107
+      }
+    },
+    {
+      "index": 5,
+      "text": "手機",
+      "note": null,
+      "rule_flag": "ok",
+      "verdict": "reasonable",
+      "weight": 1.0,
+      "distance": 0.46,
+      "effective_distance": 0.46,
+      "rarity": 0.3,
+      "outlier": false,
+      "bridge": [
+        "科技公司",
+        "iPhone"
+      ],
+      "reason": "同名科技品牌的代表產品",
+      "position": {
+        "x": 0.0925,
+        "y": -0.251,
+        "z": -0.3235
+      }
+    },
+    {
+      "index": 6,
+      "text": "秋天",
+      "note": null,
+      "rule_flag": "ok",
+      "verdict": "reasonable",
+      "weight": 1.0,
+      "distance": 0.49,
+      "effective_distance": 0.49,
+      "rarity": 0.58,
+      "outlier": false,
+      "bridge": [
+        "收成季節"
+      ],
+      "reason": "蘋果多在秋季採收",
+      "position": {
+        "x": -0.4149,
+        "y": -0.1747,
+        "z": 0.1425
+      }
+    },
+    {
+      "index": 7,
+      "text": "青森",
+      "note": null,
+      "rule_flag": "ok",
+      "verdict": "reasonable",
+      "weight": 1.0,
+      "distance": 0.56,
+      "effective_distance": 0.56,
+      "rarity": 0.81,
+      "outlier": false,
+      "bridge": [
+        "產地",
+        "日本"
+      ],
+      "reason": "青森是日本知名的蘋果產地",
+      "position": {
+        "x": -0.031,
+        "y": 0.2818,
+        "z": -0.4342
+      }
+    },
+    {
+      "index": 8,
+      "text": "白雪公主",
+      "note": "小時候最常聽的童話",
+      "rule_flag": "ok",
+      "verdict": "reasonable",
+      "weight": 1.0,
+      "distance": 0.58,
+      "effective_distance": 0.58,
+      "rarity": 0.62,
+      "outlier": false,
+      "bridge": [
+        "毒蘋果",
+        "童話"
+      ],
+      "reason": "童話中皇后用毒蘋果害她",
+      "position": {
+        "x": 0.2159,
+        "y": 0.2205,
+        "z": -0.4624
+      }
+    },
+    {
+      "index": 9,
+      "text": "牛頓",
+      "note": null,
+      "rule_flag": "ok",
+      "verdict": "reasonable",
+      "weight": 1.0,
+      "distance": 0.62,
+      "effective_distance": 0.62,
+      "rarity": 0.55,
+      "outlier": false,
+      "bridge": [
+        "掉落",
+        "萬有引力"
+      ],
+      "reason": "蘋果落地啟發萬有引力的故事",
+      "position": {
+        "x": 0.4916,
+        "y": 0.1274,
+        "z": 0.3426
+      }
+    },
+    {
+      "index": 10,
+      "text": "夏娃",
+      "note": null,
+      "rule_flag": "ok",
+      "verdict": "reasonable",
+      "weight": 1.0,
+      "distance": 0.66,
+      "effective_distance": 0.66,
+      "rarity": 0.77,
+      "outlier": false,
+      "bridge": [
+        "禁果",
+        "伊甸園"
+      ],
+      "reason": "禁果常被描繪成蘋果",
+      "position": {
+        "x": -0.3995,
+        "y": -0.381,
+        "z": -0.2216
+      }
+    },
+    {
+      "index": 11,
+      "text": "紐約",
+      "note": null,
+      "rule_flag": "ok",
+      "verdict": "reasonable",
+      "weight": 1.0,
+      "distance": 0.71,
+      "effective_distance": 0.71,
+      "rarity": 0.86,
+      "outlier": false,
+      "bridge": [
+        "大蘋果",
+        "城市暱稱"
+      ],
+      "reason": "紐約的暱稱是大蘋果",
+      "position": {
+        "x": -0.1099,
+        "y": 0.5223,
+        "z": 0.2566
+      }
+    },
+    {
+      "index": 12,
+      "text": "化油器",
+      "note": "我爸修車時都在吃蘋果",
+      "rule_flag": "ok",
+      "verdict": "borderline",
+      "weight": 0.5,
+      "distance": 0.88,
+      "effective_distance": 0.44,
+      "rarity": 0.97,
+      "outlier": true,
+      "bridge": [
+        "修車",
+        "引擎"
+      ],
+      "reason": "靠個人經驗連結，勉強說得通",
+      "position": {
+        "x": -0.3343,
+        "y": -0.5721,
+        "z": -0.389
+      }
+    },
+    {
+      "index": 13,
+      "text": "水泥",
+      "note": null,
+      "rule_flag": "ok",
+      "verdict": "unreasonable",
+      "weight": 0.0,
+      "distance": 0.91,
+      "effective_distance": 0.0,
+      "rarity": null,
+      "outlier": true,
+      "bridge": [],
+      "reason": "找不到和蘋果的聯想路徑",
+      "position": {
+        "x": 0.7485,
+        "y": -0.3963,
+        "z": 0.1501
+      }
+    },
+    {
+      "index": 14,
+      "text": "哈哈哈",
+      "note": null,
+      "rule_flag": "gibberish",
+      "verdict": "unreasonable",
+      "weight": 0.0,
+      "distance": 0.95,
+      "effective_distance": 0.0,
+      "rarity": null,
+      "outlier": true,
+      "bridge": [],
+      "reason": "規則層判定為同字連打",
+      "position": {
+        "x": 0.2614,
+        "y": -0.7303,
+        "z": 0.0297
+      }
+    }
+  ],
+  "fingerprint": {
+    "distance": {
+      "raw": 0.39,
+      "percentile": 68.0
+    },
+    "breadth": {
+      "raw": 0.57,
+      "percentile": 74.0
+    },
+    "rarity": {
+      "raw": 0.51,
+      "percentile": 61.0
+    },
+    "appropriateness": {
+      "raw": 0.83,
+      "percentile": 42.0
+    },
+    "fluency": {
+      "raw": 13.0,
+      "percentile": 55.0
+    }
+  },
+  "interpretation": {
+    "headline": "故事型遠跳者",
+    "strengths": [
+      "平均有效距離 0.39，高於 68% 的人，常從典故與故事跳開",
+      "廣度 0.57，聯想分散在食物、科技、神話、地理等不同方向"
+    ],
+    "suggestions": [
+      "合理性 0.83，有幾則找不到聯想路徑，可以補上「我怎麼想到的」",
+      "試著在同一個方向多走幾步，例如從牛頓延伸到其他科學故事"
+    ],
+    "cited_numbers": [
+      0.39,
+      68.0,
+      0.57,
+      0.83
+    ]
+  },
+  "pool": {
+    "stimulus_id": "s09",
+    "human_users": 24,
+    "seed_points": 30,
+    "enough_for_percentile": true
+  },
+  "cloud": [
+    {
+      "text": "水果",
+      "position": {
+        "x": 0.2922,
+        "y": 0.2048,
+        "z": -0.2556
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "紅色",
+      "position": {
+        "x": 0.1038,
+        "y": -0.0104,
+        "z": -0.3056
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "綠色",
+      "position": {
+        "x": 0.2281,
+        "y": -0.0622,
+        "z": 0.0054
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "果汁",
+      "position": {
+        "x": 0.0456,
+        "y": -0.397,
+        "z": 0.2351
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "果醬",
+      "position": {
+        "x": -0.2389,
+        "y": -0.3412,
+        "z": -0.2874
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "蘋果派",
+      "position": {
+        "x": 0.1942,
+        "y": -0.245,
+        "z": -0.2197
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "甜",
+      "position": {
+        "x": 0.0304,
+        "y": -0.0441,
+        "z": -0.175
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "脆",
+      "position": {
+        "x": 0.1922,
+        "y": -0.3168,
+        "z": -0.6023
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "維他命",
+      "position": {
+        "x": 0.1393,
+        "y": -0.0672,
+        "z": 0.0206
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "樹",
+      "position": {
+        "x": 0.1963,
+        "y": 0.061,
+        "z": 0.0639
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "果園",
+      "position": {
+        "x": 0.3082,
+        "y": 0.1275,
+        "z": -0.1667
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "秋天",
+      "position": {
+        "x": -0.3705,
+        "y": -0.0952,
+        "z": 0.1581
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "健康",
+      "position": {
+        "x": -0.2812,
+        "y": -0.1009,
+        "z": 0.0743
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "醫生",
+      "position": {
+        "x": 0.5714,
+        "y": -0.1243,
+        "z": 0.3363
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "牛頓",
+      "position": {
+        "x": 0.127,
+        "y": -0.2076,
+        "z": 0.0246
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "萬有引力",
+      "position": {
+        "x": 0.2352,
+        "y": 0.0048,
+        "z": -0.1988
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "白雪公主",
+      "position": {
+        "x": 0.4462,
+        "y": -0.1658,
+        "z": -0.5284
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "毒藥",
+      "position": {
+        "x": -0.0538,
+        "y": -0.086,
+        "z": 0.5069
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "夏娃",
+      "position": {
+        "x": -0.484,
+        "y": 0.1115,
+        "z": -0.4494
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "伊甸園",
+      "position": {
+        "x": 0.3008,
+        "y": 0.1831,
+        "z": 0.092
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "科技",
+      "position": {
+        "x": 0.0424,
+        "y": 0.1138,
+        "z": 0.2315
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "手機",
+      "position": {
+        "x": 0.1092,
+        "y": 0.0001,
+        "z": 0.1456
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "電腦",
+      "position": {
+        "x": 0.0626,
+        "y": 0.086,
+        "z": -0.1084
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "賈伯斯",
+      "position": {
+        "x": -0.0032,
+        "y": 0.1796,
+        "z": -0.0818
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "紐約",
+      "position": {
+        "x": 0.2146,
+        "y": 0.498,
+        "z": -0.027
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "青森",
+      "position": {
+        "x": 0.2766,
+        "y": 0.1325,
+        "z": -0.2994
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "削皮",
+      "position": {
+        "x": 0.6144,
+        "y": 0.0857,
+        "z": 0.1722
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "沙拉",
+      "position": {
+        "x": -0.6588,
+        "y": -0.0946,
+        "z": -0.2681
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "酸",
+      "position": {
+        "x": -0.0147,
+        "y": 0.37,
+        "z": -0.0629
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "香氣",
+      "position": {
+        "x": -0.0295,
+        "y": 0.3376,
+        "z": 0.379
+      },
+      "source": "seed",
+      "count": 1
+    },
+    {
+      "text": "香蕉",
+      "position": {
+        "x": 0.4218,
+        "y": -0.3219,
+        "z": -0.0068
+      },
+      "source": "human",
+      "count": 8
+    },
+    {
+      "text": "橘子",
+      "position": {
+        "x": 0.3291,
+        "y": -0.575,
+        "z": 0.0847
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "梨子",
+      "position": {
+        "x": 0.4117,
+        "y": 0.4861,
+        "z": -0.0397
+      },
+      "source": "human",
+      "count": 2
+    },
+    {
+      "text": "草莓",
+      "position": {
+        "x": -0.0943,
+        "y": -0.1998,
+        "z": -0.237
+      },
+      "source": "human",
+      "count": 5
+    },
+    {
+      "text": "西瓜",
+      "position": {
+        "x": 0.672,
+        "y": -0.3269,
+        "z": 0.4657
+      },
+      "source": "human",
+      "count": 2
+    },
+    {
+      "text": "葡萄",
+      "position": {
+        "x": -0.1772,
+        "y": 0.2305,
+        "z": 0.4028
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "果皮",
+      "position": {
+        "x": -0.0377,
+        "y": -0.244,
+        "z": -0.4367
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "種子",
+      "position": {
+        "x": 0.589,
+        "y": 0.442,
+        "z": -0.1301
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "咬一口",
+      "position": {
+        "x": -0.4152,
+        "y": -0.1437,
+        "z": -0.2059
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "便當",
+      "position": {
+        "x": -0.0052,
+        "y": -0.0996,
+        "z": 0.5059
+      },
+      "source": "human",
+      "count": 3
+    },
+    {
+      "text": "早餐",
+      "position": {
+        "x": 0.2237,
+        "y": 0.1011,
+        "z": -0.0861
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "午餐",
+      "position": {
+        "x": -0.4757,
+        "y": -0.2617,
+        "z": 0.2738
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "減肥",
+      "position": {
+        "x": -0.0213,
+        "y": 0.2025,
+        "z": 0.0227
+      },
+      "source": "human",
+      "count": 8
+    },
+    {
+      "text": "農夫",
+      "position": {
+        "x": 0.3318,
+        "y": -0.1176,
+        "z": 0.4408
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "市場",
+      "position": {
+        "x": -0.1295,
+        "y": 0.021,
+        "z": 0.1101
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "超市",
+      "position": {
+        "x": -0.1739,
+        "y": 0.0776,
+        "z": 0.2963
+      },
+      "source": "human",
+      "count": 2
+    },
+    {
+      "text": "禮盒",
+      "position": {
+        "x": -0.2607,
+        "y": 0.1997,
+        "z": -0.5763
+      },
+      "source": "human",
+      "count": 5
+    },
+    {
+      "text": "拜拜",
+      "position": {
+        "x": 0.1038,
+        "y": 0.1171,
+        "z": 0.1812
+      },
+      "source": "human",
+      "count": 8
+    },
+    {
+      "text": "平安夜",
+      "position": {
+        "x": -0.7043,
+        "y": 0.1477,
+        "z": 0.2535
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "聖誕節",
+      "position": {
+        "x": -0.1618,
+        "y": 0.2502,
+        "z": -0.4796
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "平安果",
+      "position": {
+        "x": -0.5794,
+        "y": 0.4733,
+        "z": 0.2207
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "臉頰",
+      "position": {
+        "x": -0.7627,
+        "y": -0.0296,
+        "z": 0.0823
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "小孩",
+      "position": {
+        "x": -0.3485,
+        "y": 0.1704,
+        "z": -0.036
+      },
+      "source": "human",
+      "count": 5
+    },
+    {
+      "text": "童年",
+      "position": {
+        "x": -0.3118,
+        "y": 0.077,
+        "z": -0.6238
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "營養",
+      "position": {
+        "x": 0.3314,
+        "y": 0.5861,
+        "z": -0.2785
+      },
+      "source": "human",
+      "count": 8
+    },
+    {
+      "text": "纖維",
+      "position": {
+        "x": 0.1987,
+        "y": 0.5176,
+        "z": -0.537
+      },
+      "source": "human",
+      "count": 8
+    },
+    {
+      "text": "果核",
+      "position": {
+        "x": 0.164,
+        "y": 0.006,
+        "z": 0.1278
+      },
+      "source": "human",
+      "count": 2
+    },
+    {
+      "text": "蟲",
+      "position": {
+        "x": 0.5464,
+        "y": -0.3303,
+        "z": -0.367
+      },
+      "source": "human",
+      "count": 2
+    },
+    {
+      "text": "蛀牙",
+      "position": {
+        "x": -0.2773,
+        "y": 0.1129,
+        "z": 0.1647
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "牙齒",
+      "position": {
+        "x": -0.4653,
+        "y": 0.0299,
+        "z": 0.0453
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "筆電",
+      "position": {
+        "x": -0.4179,
+        "y": -0.558,
+        "z": 0.4817
+      },
+      "source": "human",
+      "count": 3
+    },
+    {
+      "text": "耳機",
+      "position": {
+        "x": -0.0135,
+        "y": -0.0611,
+        "z": -0.3975
+      },
+      "source": "human",
+      "count": 2
+    },
+    {
+      "text": "品牌",
+      "position": {
+        "x": -0.1801,
+        "y": -0.334,
+        "z": -0.0459
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "發表會",
+      "position": {
+        "x": 0.1933,
+        "y": -0.0868,
+        "z": 0.092
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "設計",
+      "position": {
+        "x": -0.0631,
+        "y": 0.0247,
+        "z": -0.1679
+      },
+      "source": "human",
+      "count": 2
+    },
+    {
+      "text": "簡約",
+      "position": {
+        "x": 0.3974,
+        "y": -0.44,
+        "z": 0.435
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "logo",
+      "position": {
+        "x": -0.1891,
+        "y": -0.6247,
+        "z": -0.371
+      },
+      "source": "human",
+      "count": 8
+    },
+    {
+      "text": "廣告",
+      "position": {
+        "x": 0.0815,
+        "y": -0.2025,
+        "z": 0.2616
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "圖騰",
+      "position": {
+        "x": -0.4979,
+        "y": 0.1097,
+        "z": -0.4078
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "神話",
+      "position": {
+        "x": 0.1126,
+        "y": -0.1051,
+        "z": -0.1061
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "特洛伊",
+      "position": {
+        "x": 0.3652,
+        "y": 0.4116,
+        "z": 0.1432
+      },
+      "source": "human",
+      "count": 2
+    },
+    {
+      "text": "金蘋果",
+      "position": {
+        "x": -0.0305,
+        "y": 0.3264,
+        "z": 0.8296
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "女神",
+      "position": {
+        "x": -0.3355,
+        "y": -0.1351,
+        "z": 0.6584
+      },
+      "source": "human",
+      "count": 8
+    },
+    {
+      "text": "爭吵",
+      "position": {
+        "x": 0.1209,
+        "y": -0.2758,
+        "z": 0.0213
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "威廉泰爾",
+      "position": {
+        "x": 0.0231,
+        "y": 0.1754,
+        "z": 0.5483
+      },
+      "source": "human",
+      "count": 8
+    },
+    {
+      "text": "射箭",
+      "position": {
+        "x": 0.0483,
+        "y": -0.0835,
+        "z": -0.2049
+      },
+      "source": "human",
+      "count": 5
+    },
+    {
+      "text": "箭",
+      "position": {
+        "x": 0.079,
+        "y": -0.2621,
+        "z": 0.8625
+      },
+      "source": "human",
+      "count": 3
+    },
+    {
+      "text": "地心引力",
+      "position": {
+        "x": 0.1927,
+        "y": -0.2712,
+        "z": -0.1665
+      },
+      "source": "human",
+      "count": 1
+    },
+    {
+      "text": "物理",
+      "position": {
+        "x": -0.914,
+        "y": 0.0838,
+        "z": -0.1723
+      },
+      "source": "human",
+      "count": 2
+    },
+    {
+      "text": "課本",
+      "position": {
+        "x": 0.4011,
+        "y": 0.1164,
+        "z": -0.251
+      },
+      "source": "human",
+      "count": 2
+    }
+  ],
+  "warnings": [
+    "有 2 則聯想被判定為不合理，不計入距離與廣度",
+    "「哈哈哈」被規則層擋下（同字連打）"
+  ],
+  "created_at": "2026-11-12T10:30:00+08:00"
+}

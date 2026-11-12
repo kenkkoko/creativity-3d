@@ -8,68 +8,181 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
-<style>
-  /* 設計 token 沿用 me.hellokai07.com */
-  :root {
-    --bg: #08080a; --ink: #f5f5f6; --text: #c3c3c8; --muted: #8f8f97; --faint: #5a5a62;
-    --glass: rgba(255,255,255,.045); --glass-2: rgba(255,255,255,.07);
-    --line: rgba(255,255,255,.09); --line-soft: rgba(255,255,255,.05);
-    --accent: #f0a46a;
-    --sans: "Geist","Noto Sans TC",system-ui,-apple-system,sans-serif;
-    --mono: "Geist Mono",ui-monospace,monospace;
-    --ease: cubic-bezier(.16,1,.3,1);
+<link rel="stylesheet" href="/static/app.css" />
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
   }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; min-height: 100vh; background: var(--bg); color: var(--text);
-    font-family: var(--sans); -webkit-font-smoothing: antialiased;
-    background-image: radial-gradient(60% 50% at 70% 10%, rgba(240,164,106,.08), transparent 70%);
-  }
-  main { max-width: 880px; margin: 0 auto; padding: 96px 24px; }
-  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .18em; color: var(--accent); text-transform: uppercase; }
-  h1 { color: var(--ink); font-size: clamp(36px, 6vw, 56px); font-weight: 800; letter-spacing: -.02em; margin: 12px 0 16px; }
-  p.lead { font-size: 17px; line-height: 1.75; max-width: 600px; }
-  .card { margin-top: 40px; padding: 28px; border-radius: 20px; background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(12px); }
-  .card h2 { color: var(--ink); font-size: 18px; margin: 0 0 16px; }
-  .chips { display: flex; flex-wrap: wrap; gap: 10px; }
-  .chip { padding: 8px 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--glass-2); color: var(--ink); font-size: 15px; transition: border-color .3s var(--ease); }
-  .chip:hover { border-color: rgba(255,255,255,.3); }
-  .chip small { font-family: var(--mono); color: var(--faint); margin-left: 6px; }
-  .status { font-family: var(--mono); font-size: 13px; color: var(--muted); }
-  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; background: var(--faint); }
-  .dot.ok { background: #4ade80; } .dot.bad { background: #f87171; }
-</style>
+}
+</script>
 </head>
 <body>
-<main>
-  <div class="eyebrow">Creativity 3D · 階段 3 骨架</div>
-  <h1>看見你的創造力</h1>
-  <p class="lead">選一個詞，用三分鐘寫下所有聯想。送出後，你的每個想法會變成星空中的一顆星：離中心越遠，想得越遠。</p>
+<header class="topbar">
+  <a class="brand" href="#" data-action="home"><span class="brand-dot"></span>Creativity 3D</a>
+  <span class="mock-badge" id="mockBadge" hidden>MOCK 資料</span>
+</header>
 
-  <section class="card">
-    <h2>系統狀態</h2>
-    <div class="status" id="health"><span class="dot"></span>檢查中…</div>
-  </section>
+<!-- 首頁 -->
+<section class="view" id="view-home" data-view="home">
+  <main class="home">
+    <div class="eyebrow">Creativity 3D · 聯想星圖</div>
+    <h1>看見你的<span class="accent-text">聯想</span>跳了多遠</h1>
+    <p class="lead">選一個詞，用三分鐘寫下所有聯想。送出後，你的每個想法會變成星空中的一顆星：離中心越遠，想得越遠。</p>
+    <p class="fineprint">這是聯想風格指標，不是能力測驗。</p>
 
-  <section class="card">
-    <h2>預設刺激詞</h2>
-    <div class="chips" id="stimuli"></div>
-  </section>
-</main>
-<script>
-  fetch("/api/health").then(r => r.json()).then(h => {
-    const el = document.getElementById("health");
-    const cls = h.ok ? "ok" : "bad";
-    const msg = h.ok
-      ? `已連線 · ${h.provider} · ${h.llm_model} · ${h.embed_model}`
-      : (h.missing_models?.length ? `缺少模型：${h.missing_models.join(", ")}` : (h.detail?.error || "模型無法使用"));
-    el.innerHTML = `<span class="dot ${cls}"></span>${msg}`;
-  });
-  fetch("/api/stimuli").then(r => r.json()).then(list => {
-    document.getElementById("stimuli").innerHTML = list
-      .map(s => `<span class="chip">${s.word}<small>L${s.abstraction_level ?? "–"}</small></span>`)
-      .join("");
-  });
-</script>
+    <section class="card">
+      <div class="card-head"><h2>預設詞</h2><span class="label">由抽象到具象</span></div>
+      <div class="chips" id="group-preset"><span class="muted">載入中…</span></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>社群詞</h2><span class="label">依作答人數排序</span></div>
+      <div class="chips" id="group-community"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>我的詞</h2><span class="label">只有你看得到，公開後大家都能玩</span></div>
+      <div class="chips" id="group-mine"></div>
+      <form class="add-form" id="addForm" autocomplete="off">
+        <input id="addInput" type="text" maxlength="6" placeholder="新增一個詞（1–6 個中文字）" aria-label="新增自訂刺激詞" />
+        <button class="btn btn-primary" type="submit" id="addBtn">新增</button>
+      </form>
+      <div class="form-msg" id="addMsg" role="status" aria-live="polite"></div>
+    </section>
+  </main>
+</section>
+
+<!-- 作答頁 -->
+<section class="view" id="view-answer" data-view="answer" hidden>
+  <main class="answer">
+    <div class="answer-head">
+      <button class="btn btn-ghost" data-action="home" type="button">← 換一個詞</button>
+      <div class="timer" id="timer" aria-live="off">
+        <svg viewBox="0 0 44 44" aria-hidden="true"><circle class="timer-track" cx="22" cy="22" r="19" /><circle class="timer-bar" id="timerBar" cx="22" cy="22" r="19" /></svg>
+        <span id="timerText">3:00</span>
+      </div>
+    </div>
+    <div class="eyebrow center">看到這個詞，你想到什麼？</div>
+    <div class="stim-word" id="stimWord">蘋果</div>
+    <div class="answer-input-wrap">
+      <input id="answerInput" type="text" maxlength="20" placeholder="輸入一個聯想，按 Enter 新增" aria-label="輸入聯想" autocomplete="off" />
+      <span class="counter" id="answerCount">0/20</span>
+    </div>
+    <div class="form-msg center" id="answerMsg" role="status" aria-live="polite"></div>
+    <div class="answer-meta">
+      <span class="label" id="itemCount">已寫 0 則</span>
+      <button class="btn btn-primary" type="button" id="submitBtn" disabled>提早送出</button>
+    </div>
+    <ol class="items" id="items"></ol>
+    <p class="fineprint center">每則最多 20 字，可以展開「我怎麼想到的」補充說明（選填）。時間到會自動送出。</p>
+  </main>
+</section>
+
+<!-- 分析中 -->
+<section class="view" id="view-analyzing" data-view="analyzing" hidden>
+  <main class="analyzing">
+    <div class="orbit" aria-hidden="true">
+      <div class="orbit-core"></div>
+      <div class="orbit-ring r1"><i></i></div>
+      <div class="orbit-ring r2"><i></i></div>
+      <div class="orbit-ring r3"><i></i></div>
+    </div>
+    <div class="eyebrow center">Analyzing</div>
+    <h2 class="analyzing-title">正在把你的聯想變成星星</h2>
+    <ol class="steps" id="steps">
+      <li>檢查答案</li>
+      <li>計算距離</li>
+      <li>判斷合理性</li>
+      <li>繪製星圖</li>
+    </ol>
+    <div class="error-box" id="analyzeError" hidden>
+      <p id="analyzeErrorMsg"></p>
+      <div class="row">
+        <button class="btn btn-primary" type="button" id="backToAnswerBtn">回到作答頁重送</button>
+        <button class="btn btn-ghost" type="button" data-action="home">回首頁</button>
+      </div>
+    </div>
+  </main>
+</section>
+
+<!-- 結果頁 -->
+<section class="view" id="view-result" data-view="result" hidden>
+  <div class="result">
+    <div class="map" id="map">
+      <div class="map-hud">
+        <div class="eyebrow">刺激詞</div>
+        <div class="map-word" id="mapWord"></div>
+        <div class="label" id="mapPool"></div>
+      </div>
+      <ul class="legend" aria-label="圖例">
+        <li><i class="lg lg-me"></i>自己</li>
+        <li><i class="lg lg-human"></i>其他人</li>
+        <li><i class="lg lg-seed"></i>AI 參考</li>
+        <li><i class="lg lg-bad"></i>不合理</li>
+      </ul>
+      <div class="map-hint">拖曳旋轉 · 滾輪縮放 · 點星星看聯想橋</div>
+    </div>
+    <aside class="panel" id="panel">
+      <div class="panel-inner">
+        <div class="eyebrow">你的創造力指紋</div>
+        <h2 class="headline" id="headline"></h2>
+        <p class="fineprint">這是聯想風格指標，不是能力測驗。</p>
+
+        <div class="dims" id="dims"></div>
+
+        <div class="block" id="strengthsBlock">
+          <h3>亮點</h3>
+          <ul class="bullets" id="strengths"></ul>
+        </div>
+        <div class="block" id="suggestionsBlock">
+          <h3>可以試試</h3>
+          <ul class="bullets" id="suggestions"></ul>
+        </div>
+        <div class="block" id="warningsBlock" hidden>
+          <h3>提醒</h3>
+          <ul class="bullets warn" id="warnings"></ul>
+        </div>
+        <div class="block">
+          <h3>你的聯想 <span class="label">點一下在星圖上找到它</span></h3>
+          <div class="chips small" id="myItems"></div>
+        </div>
+
+        <div class="consent" id="consentBox">
+          <label class="check">
+            <input type="checkbox" id="consentCheck" />
+            <span>把我的答案匿名加入星圖，讓之後的人可以比較。只會儲存聯想文字與座標，不含任何個人資料。</span>
+          </label>
+          <button class="btn btn-primary" type="button" id="consentBtn" disabled>確認加入</button>
+          <div class="form-msg" id="consentMsg" role="status" aria-live="polite"></div>
+        </div>
+        <button class="btn btn-ghost wide" type="button" id="againBtn">再玩一個詞</button>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- 公開確認 -->
+<div class="modal" id="publishModal" hidden role="dialog" aria-modal="true" aria-labelledby="publishTitle">
+  <div class="modal-card">
+    <div class="eyebrow">公開到社群</div>
+    <h2 id="publishTitle">公開「<span id="publishWord"></span>」？</h2>
+    <p>公開後，其他人也能選這個詞作答，大家的答案會累積在同一片星空。公開後無法收回。</p>
+    <label class="check">
+      <input type="checkbox" id="publishCheck" />
+      <span>我確認要把這個詞公開到社群詞庫</span>
+    </label>
+    <div class="form-msg" id="publishMsg" role="status" aria-live="polite"></div>
+    <div class="row end">
+      <button class="btn btn-ghost" type="button" id="publishCancel">取消</button>
+      <button class="btn btn-primary" type="button" id="publishOk" disabled>確定公開</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script type="module" src="/static/app.js"></script>
 </body>
 </html>
