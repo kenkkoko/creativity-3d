@@ -41,11 +41,52 @@ class Strict(BaseModel):
 # ---------------------------------------------------------------------------
 
 
+class StimulusSource(str, Enum):
+    preset = "preset"  # 預設詞庫
+    community = "community"  # 使用者新增且已公開
+    mine = "mine"  # 使用者新增、尚未公開（只有建立者看得到）
+
+
+StimulusWord = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=1, max_length=6, pattern=r"^[\u4e00-\u9fff]+$")
+]
+
+
 class Stimulus(Strict):
     id: str = Field(description="刺激詞代號，例如 s05")
     word: str = Field(description="中文刺激詞，例如 藝術")
-    abstraction_level: int = Field(ge=1, le=10, description="1=最抽象，10=最具象")
-    source_note: str = Field(description="抽象程度的依據說明")
+    source: StimulusSource
+    abstraction_level: int | None = Field(
+        default=None, ge=1, le=10, description="1=最抽象，10=最具象；自訂詞為 null（未分級）"
+    )
+    source_note: str = Field(default="", description="抽象程度的依據說明")
+    response_count: int = Field(default=0, ge=0, description="已同意分享的作答人數")
+    ready: bool = Field(default=True, description="AI 種子產生完成才為 true")
+
+
+class CreateStimulusRequest(Strict):
+    word: StimulusWord
+    client_session_id: str = Field(min_length=8, max_length=64)
+
+
+class PublishStimulusRequest(Strict):
+    client_session_id: str = Field(min_length=8, max_length=64)
+    confirm_publish: bool = Field(description="必須由建立者在介面上明確勾選")
+
+
+class LlmStimulusCheck(Strict):
+    """LLM 判斷自訂詞是否適合當刺激詞。"""
+
+    is_associable: bool = Field(description="是否為一般人能自由聯想的詞")
+    reason: Annotated[str, StringConstraints(max_length=60)]
+
+
+class LlmSeedBatch(Strict):
+    """LLM 產生的 AI 種子聯想。"""
+
+    associations: list[Annotated[str, StringConstraints(min_length=1, max_length=MAX_TEXT_LEN)]] = Field(
+        min_length=10, max_length=40
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -242,6 +283,10 @@ class ErrorResponse(Strict):
 
 ALL_MODELS: list[type[BaseModel]] = [
     Stimulus,
+    CreateStimulusRequest,
+    PublishStimulusRequest,
+    LlmStimulusCheck,
+    LlmSeedBatch,
     SubmitRequest,
     LlmJudgementBatch,
     LlmInterpretation,

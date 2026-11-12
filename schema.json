@@ -1,5 +1,16 @@
 {
   "Stimulus": {
+    "$defs": {
+      "StimulusSource": {
+        "enum": [
+          "preset",
+          "community",
+          "mine"
+        ],
+        "title": "StimulusSource",
+        "type": "string"
+      }
+    },
     "additionalProperties": false,
     "properties": {
       "id": {
@@ -12,26 +23,140 @@
         "title": "Word",
         "type": "string"
       },
+      "source": {
+        "$ref": "#/$defs/StimulusSource"
+      },
       "abstraction_level": {
-        "description": "1=最抽象，10=最具象",
-        "maximum": 10,
-        "minimum": 1,
-        "title": "Abstraction Level",
-        "type": "integer"
+        "anyOf": [
+          {
+            "maximum": 10,
+            "minimum": 1,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "1=最抽象，10=最具象；自訂詞為 null（未分級）",
+        "title": "Abstraction Level"
       },
       "source_note": {
+        "default": "",
         "description": "抽象程度的依據說明",
         "title": "Source Note",
         "type": "string"
+      },
+      "response_count": {
+        "default": 0,
+        "description": "已同意分享的作答人數",
+        "minimum": 0,
+        "title": "Response Count",
+        "type": "integer"
+      },
+      "ready": {
+        "default": true,
+        "description": "AI 種子產生完成才為 true",
+        "title": "Ready",
+        "type": "boolean"
       }
     },
     "required": [
       "id",
       "word",
-      "abstraction_level",
-      "source_note"
+      "source"
     ],
     "title": "Stimulus",
+    "type": "object"
+  },
+  "CreateStimulusRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "word": {
+        "maxLength": 6,
+        "minLength": 1,
+        "pattern": "^[\\u4e00-\\u9fff]+$",
+        "title": "Word",
+        "type": "string"
+      },
+      "client_session_id": {
+        "maxLength": 64,
+        "minLength": 8,
+        "title": "Client Session Id",
+        "type": "string"
+      }
+    },
+    "required": [
+      "word",
+      "client_session_id"
+    ],
+    "title": "CreateStimulusRequest",
+    "type": "object"
+  },
+  "PublishStimulusRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "client_session_id": {
+        "maxLength": 64,
+        "minLength": 8,
+        "title": "Client Session Id",
+        "type": "string"
+      },
+      "confirm_publish": {
+        "description": "必須由建立者在介面上明確勾選",
+        "title": "Confirm Publish",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "client_session_id",
+      "confirm_publish"
+    ],
+    "title": "PublishStimulusRequest",
+    "type": "object"
+  },
+  "LlmStimulusCheck": {
+    "additionalProperties": false,
+    "description": "LLM 判斷自訂詞是否適合當刺激詞。",
+    "properties": {
+      "is_associable": {
+        "description": "是否為一般人能自由聯想的詞",
+        "title": "Is Associable",
+        "type": "boolean"
+      },
+      "reason": {
+        "maxLength": 60,
+        "title": "Reason",
+        "type": "string"
+      }
+    },
+    "required": [
+      "is_associable",
+      "reason"
+    ],
+    "title": "LlmStimulusCheck",
+    "type": "object"
+  },
+  "LlmSeedBatch": {
+    "additionalProperties": false,
+    "description": "LLM 產生的 AI 種子聯想。",
+    "properties": {
+      "associations": {
+        "items": {
+          "maxLength": 20,
+          "minLength": 1,
+          "type": "string"
+        },
+        "maxItems": 40,
+        "minItems": 10,
+        "title": "Associations",
+        "type": "array"
+      }
+    },
+    "required": [
+      "associations"
+    ],
+    "title": "LlmSeedBatch",
     "type": "object"
   },
   "SubmitRequest": {
@@ -563,27 +688,60 @@
             "title": "Word",
             "type": "string"
           },
+          "source": {
+            "$ref": "#/$defs/StimulusSource"
+          },
           "abstraction_level": {
-            "description": "1=最抽象，10=最具象",
-            "maximum": 10,
-            "minimum": 1,
-            "title": "Abstraction Level",
-            "type": "integer"
+            "anyOf": [
+              {
+                "maximum": 10,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "1=最抽象，10=最具象；自訂詞為 null（未分級）",
+            "title": "Abstraction Level"
           },
           "source_note": {
+            "default": "",
             "description": "抽象程度的依據說明",
             "title": "Source Note",
             "type": "string"
+          },
+          "response_count": {
+            "default": 0,
+            "description": "已同意分享的作答人數",
+            "minimum": 0,
+            "title": "Response Count",
+            "type": "integer"
+          },
+          "ready": {
+            "default": true,
+            "description": "AI 種子產生完成才為 true",
+            "title": "Ready",
+            "type": "boolean"
           }
         },
         "required": [
           "id",
           "word",
-          "abstraction_level",
-          "source_note"
+          "source"
         ],
         "title": "Stimulus",
         "type": "object"
+      },
+      "StimulusSource": {
+        "enum": [
+          "preset",
+          "community",
+          "mine"
+        ],
+        "title": "StimulusSource",
+        "type": "string"
       },
       "Verdict": {
         "enum": [
