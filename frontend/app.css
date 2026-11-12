@@ -29,6 +29,9 @@ input { font: inherit; }
   pointer-events: none;
 }
 .topbar > * { pointer-events: auto; }
+@media (max-width: 960px) {
+  .topbar { background: linear-gradient(to bottom, rgba(8,8,10,.92) 60%, rgba(8,8,10,0)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+}
 .brand {
   display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none;
   font-family: var(--mono); font-size: 12px; letter-spacing: .18em; text-transform: uppercase;
@@ -149,17 +152,18 @@ body:not([data-view="home"]) .who { display: none; }
 .spinner.inline { display: inline-block; vertical-align: -1px; margin-right: 8px; }
 .hist-item { position: relative; display: flex; }
 .hist-item > .hist-card { flex: 1; }
+/* 刪除：和標籤同一套膠囊樣式，放在卡片右下角，平常低調、滑過才轉紅 */
 .hist-del {
-  position: absolute; top: 10px; right: 10px; z-index: 2; width: 26px; height: 26px; border-radius: 50%;
-  border: 1px solid var(--line); background: rgba(8,8,10,.6); color: var(--muted); font-size: 12px; line-height: 1;
-  cursor: pointer; opacity: 0; transition: opacity .2s var(--ease), color .2s var(--ease), border-color .2s var(--ease);
+  position: absolute; right: 14px; bottom: 14px; z-index: 2;
+  padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--glass);
+  color: var(--faint); font-size: 12px; line-height: 1.4; cursor: pointer;
+  transition: color .3s var(--ease), border-color .3s var(--ease), background .3s var(--ease);
 }
-.hist-item:hover .hist-del, .hist-del:focus-visible { opacity: 1; }
-.hist-del:hover { color: #f87171; border-color: rgba(248,113,113,.5); }
-@media (hover: none) { .hist-del { opacity: .8; } }
-.hist-item .badge-shared { margin-right: 30px; }
-.btn-danger { background: rgba(248,113,113,.14); color: #fca5a5; border: 1px solid rgba(248,113,113,.4); }
-.btn-danger:hover { background: rgba(248,113,113,.24); color: #fecaca; }
+.hist-item:hover .hist-del { color: var(--muted); }
+.hist-del:hover, .hist-del:focus-visible { color: #fca5a5; border-color: rgba(248,113,113,.45); background: rgba(248,113,113,.08); outline: none; }
+.hist-item .hist-meta, .hist-item .hist-headline { max-width: calc(100% - 58px); }
+.btn-danger { background: rgba(248,113,113,.12); color: #fca5a5; border-color: rgba(248,113,113,.4); }
+.btn-danger:hover { background: rgba(248,113,113,.2); color: #fecaca; }
 .btn-danger:disabled { opacity: .5; cursor: progress; }
 .hist-card {
   position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left;
@@ -300,6 +304,9 @@ body:not([data-view="home"]) .who { display: none; }
 .bullets li::before { content: ""; position: absolute; left: 2px; top: .7em; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
 .bullets.warn li::before { background: var(--faint); }
 .bullets.warn li { color: var(--muted); font-size: 13px; }
+.result-actions { display: flex; gap: 10px; }
+.result-actions .btn { flex: 1; }
+.result-actions .btn[hidden] { display: none; }
 .consent { margin: 32px 0 14px; padding: 18px 20px; border-radius: 16px; background: var(--glass); border: 1px solid var(--line); }
 .consent .btn { margin-top: 14px; }
 .consent.done { border-color: rgba(74,222,128,.3); }

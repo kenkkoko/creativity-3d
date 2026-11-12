@@ -512,7 +512,7 @@ function renderHistory() {
     const n = typeof h.fluency === "number" ? Math.round(h.fluency) : "—";
     return `
     <div class="hist-item">
-    <button type="button" class="hist-del" data-del="${esc(h.submission_id)}" aria-label="刪除這筆紀錄" title="刪除這筆紀錄">✕</button>
+    <button type="button" class="hist-del" data-del="${esc(h.submission_id)}" aria-label="刪除「${esc(h.stimulus_word)}」這筆紀錄">刪除</button>
     <button type="button" class="hist-card" data-sub="${esc(h.submission_id)}">
       <span class="hist-top">
         <span class="hist-word">${esc(h.stimulus_word)}</span>
