@@ -176,13 +176,16 @@ def test_not_blocked_word(text):
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("text", ["apple", "Newton", "asdfgh", "12345", "!!!", "😀😀", "ㄅㄆㄇ"])
-def test_no_cjk(text):
-    # 決定：check_association 的順序是 no_cjk 在 gibberish 之前，
-    # 所以「asdfgh」、純數字、純表情、注音等「不含任何中文字」的輸入一律回 no_cjk。
-    # （SPEC 範例「ㄅㄆㄇ」→ 規則層擋下，w=0；flag 是 no_cjk 還是 gibberish 不影響計分。
-    #   注音的 gibberish 判斷見 is_gibberish 與 check_stimulus_word 的測試。）
-    assert chk(text) == F.no_cjk
+@pytest.mark.parametrize("text", ["apple", "Newton", "HELLO KITTY", "MSI", "KINGSTON"])
+def test_english_answers_allowed(text):
+    # v0.4 規則：允許純英文（品牌、角色名），例如刺激詞「紅色」→ MSI（紅色龍 logo）
+    assert chk(text) == F.ok
+
+
+@pytest.mark.parametrize("text", ["asdfgh", "12345", "!!!", "😀😀", "ㄅㄆㄇ"])
+def test_no_letters_or_mash_blocked(text):
+    # 沒有任何中英文字、或鍵盤亂打 → gibberish（先於 no_cjk 判斷）
+    assert chk(text) == F.gibberish
 
 
 @pytest.mark.parametrize("text", ["iPhone手機", "DNA螺旋", "a字"])
@@ -248,7 +251,7 @@ def test_not_same_as_stimulus(text):
 
 
 def test_same_as_stimulus_mixed_case():
-    assert chk("iphone", "iPhone") == F.no_cjk  # 不含中文，先被 no_cjk 擋
+    assert chk("iphone", "iPhone") == F.same_as_stimulus  # 允許英文後，不分大小寫比對
     assert chk("iPhone手機", "iphone手機") == F.same_as_stimulus
 
 

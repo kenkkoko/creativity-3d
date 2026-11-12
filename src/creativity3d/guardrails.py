@@ -157,7 +157,7 @@ def is_gibberish(text: str) -> bool:
 def check_association(text: str, stimulus: str, previous: list[str]) -> RuleFlag:
     """單則聯想的規則層判斷。
 
-    順序：empty → too_long → injection → blocked_word → no_cjk → gibberish
+    順序：empty → too_long → injection → blocked_word → gibberish → no_cjk（沒有任何中英文字）
           → same_as_stimulus → duplicate
     """
     stripped = (text or "").strip()
@@ -170,10 +170,11 @@ def check_association(text: str, stimulus: str, previous: list[str]) -> RuleFlag
         return RuleFlag.injection
     if _has_blocked_word(stripped):
         return RuleFlag.blocked_word
-    if not _CJK_RE.search(stripped):
-        return RuleFlag.no_cjk
     if is_gibberish(stripped):
         return RuleFlag.gibberish
+    # 允許純英文（HELLO KITTY、MSI、KINGSTON 等品牌或角色名）；只擋沒有任何文字的輸入
+    if not _CJK_RE.search(stripped) and not _ASCII_LETTERS_RE.search(_normalize(stripped)):
+        return RuleFlag.no_cjk
     if key == _squash(stimulus or ""):
         return RuleFlag.same_as_stimulus
     if any(key == _squash(p or "") for p in previous):

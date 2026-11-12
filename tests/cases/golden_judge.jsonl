@@ -1,0 +1,68 @@
+{"stimulus": "紅色", "text": "蘋果", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "蝴蝶結", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "太陽", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "HELLO KITTY", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "愛心", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "溫暖", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "蠟筆小新的房子", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "聖誕節", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "新年", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "紅包", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "100元鈔票", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "皮克敏", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "櫻桃", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "小丸子", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "多拉A夢的鼻子", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "麋鹿", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "魯夫", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "KINGSTON", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "MSI", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "超跑", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "杜卡迪", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "DOMO君的嘴巴", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "口紅", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "腮紅", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "紅色", "text": "紅酒", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "國王", "text": "新衣", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "國王", "text": "透明", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "國王", "text": "裸體", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "國王", "text": "王冠", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "國王", "text": "城堡", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "國王", "text": "騎士", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "國王", "text": "弓箭手", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "國王", "text": "小丑", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "國王", "text": "弄臣", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "國王", "text": "舞孃", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "國王", "text": "權貴", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "國王", "text": "護城河", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "國王", "text": "寶劍", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "國王", "text": "黃金", "expect": "ok", "source": "Kai 2026-11-12 實測"}
+{"stimulus": "蘋果", "text": "牛頓", "expect": "ok", "source": "SPEC 例子＋人工"}
+{"stimulus": "蘋果", "text": "紅色", "expect": "ok", "source": "SPEC 例子＋人工"}
+{"stimulus": "蘋果", "text": "白雪公主", "expect": "ok", "source": "SPEC 例子＋人工"}
+{"stimulus": "蘋果", "text": "手機", "expect": "ok", "source": "SPEC 例子＋人工"}
+{"stimulus": "蘋果", "text": "派", "expect": "ok", "source": "SPEC 例子＋人工"}
+{"stimulus": "蘋果", "text": "化油器", "expect": "bad", "source": "SPEC 例子＋人工"}
+{"stimulus": "蘋果", "text": "水泥", "expect": "bad", "source": "SPEC 例子＋人工"}
+{"stimulus": "蘋果", "text": "斑馬線", "expect": "bad", "source": "SPEC 例子＋人工"}
+{"stimulus": "紅色", "text": "計算機", "expect": "bad", "source": "人工：無關"}
+{"stimulus": "紅色", "text": "鍵盤", "expect": "bad", "source": "人工：無關"}
+{"stimulus": "紅色", "text": "雲端硬碟", "expect": "bad", "source": "人工：無關"}
+{"stimulus": "牛奶", "text": "乳牛", "expect": "ok", "source": "人工"}
+{"stimulus": "牛奶", "text": "早餐", "expect": "ok", "source": "人工"}
+{"stimulus": "牛奶", "text": "鈣", "expect": "ok", "source": "人工"}
+{"stimulus": "牛奶", "text": "白色", "expect": "ok", "source": "人工"}
+{"stimulus": "牛奶", "text": "布丁", "expect": "ok", "source": "人工"}
+{"stimulus": "牛奶", "text": "電線桿", "expect": "bad", "source": "人工"}
+{"stimulus": "牛奶", "text": "輪胎", "expect": "bad", "source": "人工"}
+{"stimulus": "牛奶", "text": "發票", "expect": "bad", "source": "人工"}
+{"stimulus": "時間", "text": "時鐘", "expect": "ok", "source": "人工"}
+{"stimulus": "時間", "text": "金錢", "expect": "ok", "source": "人工"}
+{"stimulus": "時間", "text": "光陰", "expect": "ok", "source": "人工"}
+{"stimulus": "時間", "text": "沙漏", "expect": "ok", "source": "人工"}
+{"stimulus": "時間", "text": "遲到", "expect": "ok", "source": "人工"}
+{"stimulus": "時間", "text": "拖鞋", "expect": "bad", "source": "人工"}
+{"stimulus": "時間", "text": "醬油", "expect": "bad", "source": "人工"}
+{"stimulus": "國王", "text": "洗衣粉", "expect": "bad", "source": "人工：無關"}
+{"stimulus": "國王", "text": "鍵盤", "expect": "bad", "source": "人工：無關"}
+{"stimulus": "國王", "text": "橡皮擦", "expect": "bad", "source": "人工：無關"}

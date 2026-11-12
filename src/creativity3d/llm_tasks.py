@@ -85,14 +85,15 @@ def _repair_bridges(stimulus: str, batch: list[JudgeItem], result: LlmJudgementB
     return fixed
 
 
-def _judge_batch(llm: LLMProvider, stimulus: str, batch: list[JudgeItem], max_retries: int):
+def _judge_batch(llm: LLMProvider, stimulus: str, batch: list[JudgeItem], max_retries: int,
+                 context: list[str] | None = None):
     answers = [{"index": it.index, "text": it.text, "note": it.note} for it in batch]
     outliers = [it.index for it in batch if it.outlier]
     result = call_structured(
         llm,
         LlmJudgementBatch,
         prompts.JUDGE_SYSTEM,
-        prompts.judge_user(stimulus, answers, outliers),
+        prompts.judge_user(stimulus, answers, outliers, context=context),
         task="judge",
         max_retries=max_retries,
         extra_check=_judge_check(stimulus, batch),
@@ -116,9 +117,10 @@ def judge_associations(
     if not items:
         return {}
     batch_size = max(1, batch_size)
+    context = [it.text for it in items]  # 每一批都看得到這位使用者的全部答案
     batches = [items[i : i + batch_size] for i in range(0, len(items), batch_size)]
     with ThreadPoolExecutor(max_workers=max(1, min(parallel, len(batches)))) as pool:
-        results = list(pool.map(lambda b: _judge_batch(llm, stimulus, b, max_retries), batches))
+        results = list(pool.map(lambda b: _judge_batch(llm, stimulus, b, max_retries, context), batches))
     if all(r is None for r in results):
         return None
     out: dict[int, LlmJudgement] = {}
