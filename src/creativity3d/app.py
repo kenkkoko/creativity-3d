@@ -190,6 +190,7 @@ def create_app(settings: Settings | None = None, *, seed_on_startup: bool = True
         if found is None:
             raise AppError(ErrorCode.unknown_stimulus, "找不到這筆紀錄。", 404)
         response, shared = found
+        response = pipeline.refresh_positions(svc_of(request), response)
         if shared:
             response = response.model_copy(update={"warnings": [*response.warnings, "這次的答案已加入星圖。"]})
         return response

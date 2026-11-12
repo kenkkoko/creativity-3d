@@ -116,6 +116,19 @@ PIN_MAX_FAILURES = 5
 PIN_LOCK_MINUTES = 10
 
 
+def _clean_legacy_response(data: dict) -> dict:
+    """舊紀錄相容：早期版本的解讀可能含空白或過短的項目（例如 "\\r\\n    "），
+    讀取時去掉；清完若某個清單變空，就把整個解讀設為 None（前端改顯示預設文字）。"""
+    interp = data.get("interpretation")
+    if isinstance(interp, dict):
+        for key in ("strengths", "suggestions"):
+            items = [t.strip() for t in interp.get(key) or [] if isinstance(t, str) and len(t.strip()) >= 4]
+            interp[key] = items
+        if not interp.get("strengths") or not interp.get("suggestions"):
+            data["interpretation"] = None
+    return data
+
+
 def _hash_pin(pin: str, salt: str) -> str:
     return hashlib.pbkdf2_hmac("sha256", pin.encode(), bytes.fromhex(salt), 120_000).hex()
 
@@ -213,7 +226,17 @@ class _PlayerMixin:
             ).fetchone()
         if row is None:
             return None
-        return AnalysisResponse.model_validate_json(row["response_json"]), bool(row["shared"])
+        data = _clean_legacy_response(json.loads(row["response_json"]))
+        return AnalysisResponse.model_validate(data), bool(row["shared"])
+
+    def answer_vectors(self, submission_id: str) -> np.ndarray | None:
+        """依 idx 順序回傳這次作答每則答案的向量。"""
+        with self._conn() as con:
+            rows = con.execute("SELECT vec FROM answers WHERE submission_id = ? ORDER BY idx",
+                               (submission_id,)).fetchall()
+        if not rows:
+            return None
+        return np.vstack([_from_blob(r["vec"]) for r in rows])
 
 
 class Store(_PlayerMixin):
