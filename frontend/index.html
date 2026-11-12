@@ -81,8 +81,10 @@
       <div class="form-msg" id="addMsg" role="status" aria-live="polite"></div>
     </section>
 
-    <section class="card">
-      <div class="card-head"><h2>我的紀錄</h2><span class="label" id="historyCount"></span></div>
+    <section class="card" id="historySection">
+      <div class="card-head"><h2>我的紀錄</h2>
+        <span class="head-right"><span class="label" id="historyCount"></span><button type="button" class="text-btn" id="historyEdit" aria-pressed="false" hidden>刪除</button></span>
+      </div>
       <div class="history" id="history"><span class="muted">載入中…</span></div>
     </section>
   </main>

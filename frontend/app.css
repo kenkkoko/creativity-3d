@@ -152,16 +152,29 @@ body:not([data-view="home"]) .who { display: none; }
 .spinner.inline { display: inline-block; vertical-align: -1px; margin-right: 8px; }
 .hist-item { position: relative; display: flex; }
 .hist-item > .hist-card { flex: 1; }
-/* 刪除：和標籤同一套膠囊樣式，放在卡片右下角，平常低調、滑過才轉紅 */
-.hist-del {
-  position: absolute; right: 14px; bottom: 14px; z-index: 2;
-  padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--glass);
-  color: var(--faint); font-size: 12px; line-height: 1.4; cursor: pointer;
-  transition: color .3s var(--ease), border-color .3s var(--ease), background .3s var(--ease);
+/* 「我的紀錄」標題右側的文字按鈕：和「共 N 筆」同一套小字樣式 */
+.head-right { display: inline-flex; align-items: baseline; gap: 14px; }
+.text-btn {
+  padding: 0; border: 0; background: none; cursor: pointer;
+  font-family: var(--mono); font-size: 11px; letter-spacing: .08em; color: var(--muted);
+  transition: color .3s var(--ease);
 }
-.hist-item:hover .hist-del { color: var(--muted); }
-.hist-del:hover, .hist-del:focus-visible { color: #fca5a5; border-color: rgba(248,113,113,.45); background: rgba(248,113,113,.08); outline: none; }
-.hist-item .hist-meta, .hist-item .hist-headline { max-width: calc(100% - 58px); }
+.text-btn:hover { color: var(--ink); }
+.text-btn[aria-pressed="true"] { color: var(--accent); }
+.text-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+/* 刪除模式：每張卡片右上角出現小小的 ×，點卡片本身也會開啟刪除確認 */
+.hist-del {
+  display: none; position: absolute; top: -7px; right: -7px; z-index: 2;
+  width: 20px; height: 20px; padding: 0; border-radius: 50%;
+  border: 1px solid rgba(248,113,113,.45); background: #17171a; color: #fca5a5;
+  font-size: 13px; line-height: 18px; text-align: center; cursor: pointer;
+  transition: background .3s var(--ease), transform .3s var(--ease);
+}
+.editing .hist-del { display: block; animation: popIn .3s var(--ease) both; }
+.hist-del:hover, .hist-del:focus-visible { background: rgba(248,113,113,.18); transform: scale(1.08); outline: none; }
+.editing .hist-card { border-style: dashed; border-color: rgba(248,113,113,.28); }
+.editing .hist-card:hover { transform: none; border-color: rgba(248,113,113,.5); }
+@keyframes popIn { from { opacity: 0; transform: scale(.6); } }
 .btn-danger { background: rgba(248,113,113,.12); color: #fca5a5; border-color: rgba(248,113,113,.4); }
 .btn-danger:hover { background: rgba(248,113,113,.2); color: #fecaca; }
 .btn-danger:disabled { opacity: .5; cursor: progress; }
