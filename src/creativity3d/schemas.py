@@ -267,6 +267,43 @@ class ConsentResponse(Strict):
 
 
 # ---------------------------------------------------------------------------
+# 玩家身分與紀錄
+# ---------------------------------------------------------------------------
+
+Nickname = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=1, max_length=12,
+                           pattern=r"^[\u4e00-\u9fffA-Za-z0-9_]+$")
+]
+
+
+class PlayerLoginRequest(Strict):
+    nickname: Nickname = Field(description="玩家暱稱，1–12 字，中英數與底線")
+    pin: str = Field(pattern=r"^\d{4}$", description="4 位數字 PIN")
+    client_session_id: str = Field(min_length=8, max_length=64, description="目前瀏覽器的匿名 ID")
+
+
+class PlayerLoginResponse(Strict):
+    nickname: str
+    session_id: str = Field(description="之後所有 API 都改用這個 ID")
+    is_new: bool = Field(description="true = 第一次建立身分")
+
+
+class PlayerInfo(Strict):
+    nickname: str | None
+
+
+class HistoryItem(Strict):
+    submission_id: str
+    stimulus_id: str
+    stimulus_word: str
+    created_at: datetime
+    fluency: float | None
+    distance: float | None
+    headline: str | None
+    shared: bool
+
+
+# ---------------------------------------------------------------------------
 # 錯誤
 # ---------------------------------------------------------------------------
 
@@ -274,6 +311,8 @@ class ConsentResponse(Strict):
 class ErrorCode(str, Enum):
     invalid_input = "invalid_input"
     blocked_input = "blocked_input"
+    auth_failed = "auth_failed"
+    rate_limited = "rate_limited"
     unknown_stimulus = "unknown_stimulus"
     llm_unavailable = "llm_unavailable"
     internal = "internal"
@@ -296,5 +335,9 @@ ALL_MODELS: list[type[BaseModel]] = [
     AnalysisResponse,
     ConsentRequest,
     ConsentResponse,
+    PlayerLoginRequest,
+    PlayerLoginResponse,
+    PlayerInfo,
+    HistoryItem,
     ErrorResponse,
 ]

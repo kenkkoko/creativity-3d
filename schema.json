@@ -258,8 +258,8 @@
             "type": "array"
           },
           "reason": {
-            "description": "一句話理由，繁體中文",
-            "maxLength": 60,
+            "description": "一句話理由，繁體中文，30 字以內",
+            "maxLength": 30,
             "title": "Reason",
             "type": "string"
           }
@@ -313,6 +313,7 @@
       "strengths": {
         "items": {
           "maxLength": 60,
+          "minLength": 4,
           "type": "string"
         },
         "maxItems": 3,
@@ -323,6 +324,7 @@
       "suggestions": {
         "items": {
           "maxLength": 60,
+          "minLength": 4,
           "type": "string"
         },
         "maxItems": 3,
@@ -466,6 +468,7 @@
           "strengths": {
             "items": {
               "maxLength": 60,
+              "minLength": 4,
               "type": "string"
             },
             "maxItems": 3,
@@ -476,6 +479,7 @@
           "suggestions": {
             "items": {
               "maxLength": 60,
+              "minLength": 4,
               "type": "string"
             },
             "maxItems": 3,
@@ -873,12 +877,165 @@
     "title": "ConsentResponse",
     "type": "object"
   },
+  "PlayerLoginRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "nickname": {
+        "description": "玩家暱稱，1–12 字，中英數與底線",
+        "maxLength": 12,
+        "minLength": 1,
+        "pattern": "^[\\u4e00-\\u9fffA-Za-z0-9_]+$",
+        "title": "Nickname",
+        "type": "string"
+      },
+      "pin": {
+        "description": "4 位數字 PIN",
+        "pattern": "^\\d{4}$",
+        "title": "Pin",
+        "type": "string"
+      },
+      "client_session_id": {
+        "description": "目前瀏覽器的匿名 ID",
+        "maxLength": 64,
+        "minLength": 8,
+        "title": "Client Session Id",
+        "type": "string"
+      }
+    },
+    "required": [
+      "nickname",
+      "pin",
+      "client_session_id"
+    ],
+    "title": "PlayerLoginRequest",
+    "type": "object"
+  },
+  "PlayerLoginResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "nickname": {
+        "title": "Nickname",
+        "type": "string"
+      },
+      "session_id": {
+        "description": "之後所有 API 都改用這個 ID",
+        "title": "Session Id",
+        "type": "string"
+      },
+      "is_new": {
+        "description": "true = 第一次建立身分",
+        "title": "Is New",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "nickname",
+      "session_id",
+      "is_new"
+    ],
+    "title": "PlayerLoginResponse",
+    "type": "object"
+  },
+  "PlayerInfo": {
+    "additionalProperties": false,
+    "properties": {
+      "nickname": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Nickname"
+      }
+    },
+    "required": [
+      "nickname"
+    ],
+    "title": "PlayerInfo",
+    "type": "object"
+  },
+  "HistoryItem": {
+    "additionalProperties": false,
+    "properties": {
+      "submission_id": {
+        "title": "Submission Id",
+        "type": "string"
+      },
+      "stimulus_id": {
+        "title": "Stimulus Id",
+        "type": "string"
+      },
+      "stimulus_word": {
+        "title": "Stimulus Word",
+        "type": "string"
+      },
+      "created_at": {
+        "format": "date-time",
+        "title": "Created At",
+        "type": "string"
+      },
+      "fluency": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Fluency"
+      },
+      "distance": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Distance"
+      },
+      "headline": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Headline"
+      },
+      "shared": {
+        "title": "Shared",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "submission_id",
+      "stimulus_id",
+      "stimulus_word",
+      "created_at",
+      "fluency",
+      "distance",
+      "headline",
+      "shared"
+    ],
+    "title": "HistoryItem",
+    "type": "object"
+  },
   "ErrorResponse": {
     "$defs": {
       "ErrorCode": {
         "enum": [
           "invalid_input",
           "blocked_input",
+          "auth_failed",
+          "rate_limited",
           "unknown_stimulus",
           "llm_unavailable",
           "internal"

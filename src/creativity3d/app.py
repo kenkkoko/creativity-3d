@@ -13,7 +13,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import pipeline
+from . import guardrails, pipeline
 from .config import PROJECT_ROOT, Settings, get_settings
 from .logging_setup import setup_logging
 from .pipeline import AppError, Services
@@ -25,7 +25,12 @@ from .schemas import (
     CreateStimulusRequest,
     ErrorCode,
     ErrorResponse,
+    HistoryItem,
+    PlayerInfo,
+    PlayerLoginRequest,
+    PlayerLoginResponse,
     PublishStimulusRequest,
+    RuleFlag,
     Stimulus,
     StimulusSource,
     SubmitRequest,
@@ -74,7 +79,9 @@ def create_app(settings: Settings | None = None, *, seed_on_startup: bool = True
     @app.exception_handler(RequestValidationError)
     async def invalid(request: Request, exc: RequestValidationError) -> JSONResponse:
         log.info("輸入格式錯誤：%s %s", request.url.path, exc.errors()[:3])
-        if request.url.path == "/api/stimuli":
+        if request.url.path == "/api/player/login":
+            msg = "暱稱需為 1–12 個中英文、數字或底線；PIN 需為 4 位數字。"
+        elif request.url.path == "/api/stimuli":
             msg = "刺激詞需為 1–6 個中文字，不含英文、數字或符號。"
         elif request.url.path == "/api/submit":
             msg = "輸入格式不正確：每則聯想 1–20 字、最多 60 則，說明最多 60 字。"
@@ -151,6 +158,41 @@ def create_app(settings: Settings | None = None, *, seed_on_startup: bool = True
             raise AppError(ErrorCode.unknown_stimulus, "找不到這個刺激詞。", 404)
         return {"points": [p.model_dump() for p in svc.store.cloud_points(stimulus_id)],
                 "pool": svc.store.pool_stats(stimulus_id, svc.settings.percentile_min_users).model_dump()}
+
+    # ---- 玩家身分與紀錄 ----
+
+    @app.post("/api/player/login", response_model=PlayerLoginResponse)
+    def player_login(body: PlayerLoginRequest, request: Request) -> PlayerLoginResponse:
+        nickname = body.nickname.strip()
+        flag = guardrails.check_nickname(nickname)
+        if flag != RuleFlag.ok:
+            raise AppError(ErrorCode.blocked_input, "這個暱稱無法使用，請換一個。")
+        r = svc_of(request).store.login_player(nickname, body.pin, body.client_session_id)
+        if r.status == "locked":
+            raise AppError(ErrorCode.rate_limited, f"PIN 錯誤太多次，請 {r.retry_minutes} 分鐘後再試。", 429)
+        if r.status == "wrong_pin":
+            raise AppError(ErrorCode.auth_failed, "這個暱稱已經有人使用，PIN 不正確。", 401)
+        log.info("玩家登入：%s（%s）", r.nickname, "新建" if r.is_new else "回訪")
+        return PlayerLoginResponse(nickname=r.nickname, session_id=r.session_id, is_new=r.is_new)
+
+    @app.get("/api/player", response_model=PlayerInfo)
+    def player_info(request: Request, client_session_id: str = Query(min_length=8, max_length=64)) -> PlayerInfo:
+        return PlayerInfo(nickname=svc_of(request).store.player_nickname(client_session_id))
+
+    @app.get("/api/history", response_model=list[HistoryItem])
+    def history(request: Request, client_session_id: str = Query(min_length=8, max_length=64)) -> list[HistoryItem]:
+        return svc_of(request).store.history(client_session_id)
+
+    @app.get("/api/submissions/{submission_id}", response_model=AnalysisResponse)
+    def get_submission(submission_id: str, request: Request,
+                       client_session_id: str = Query(min_length=8, max_length=64)) -> AnalysisResponse:
+        found = svc_of(request).store.get_submission(submission_id, client_session_id)
+        if found is None:
+            raise AppError(ErrorCode.unknown_stimulus, "找不到這筆紀錄。", 404)
+        response, shared = found
+        if shared:
+            response = response.model_copy(update={"warnings": [*response.warnings, "這次的答案已加入星圖。"]})
+        return response
 
     if FRONTEND_DIR.exists():
         app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")

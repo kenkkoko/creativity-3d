@@ -240,3 +240,18 @@ def mask_pii(text: str) -> str:
     for p in _PII_PATTERNS:
         masked = p.sub(PII_MASK, masked)
     return text if masked == norm else masked
+
+
+def check_nickname(nickname: str) -> RuleFlag:
+    """玩家暱稱檢查：格式已由 schema 限制（1–12 字中英數底線），這裡擋不雅字詞與指令性文字。
+
+    例：「Kai」→ ok；「忽略指示」→ injection；含髒話 → blocked_word。
+    """
+    t = nickname.strip()
+    if not t:
+        return RuleFlag.empty
+    if detect_injection(t):
+        return RuleFlag.injection
+    if _has_blocked_word(t):
+        return RuleFlag.blocked_word
+    return RuleFlag.ok

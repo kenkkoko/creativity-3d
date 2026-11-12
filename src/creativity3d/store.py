@@ -10,18 +10,20 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
+import secrets
 import sqlite3
 import uuid
 from collections.abc import Iterator
 from contextlib import contextmanager
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import numpy as np
 
 from .projection import Projector
-from .schemas import AnalysisResponse, CloudPoint, PoolStats, Stimulus, StimulusSource
+from .schemas import AnalysisResponse, CloudPoint, HistoryItem, PoolStats, Stimulus, StimulusSource
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS stimuli (
@@ -37,6 +39,17 @@ CREATE TABLE IF NOT EXISTS stimuli (
 );
 CREATE INDEX IF NOT EXISTS idx_stimuli_word ON stimuli(word);
 CREATE INDEX IF NOT EXISTS idx_stimuli_creator ON stimuli(creator_session, created_at);
+
+CREATE TABLE IF NOT EXISTS players (
+    nickname_key TEXT PRIMARY KEY,      -- 小寫後的暱稱，用來判斷重複（Kai = kai）
+    nickname TEXT NOT NULL,
+    pin_hash TEXT NOT NULL,
+    salt TEXT NOT NULL,
+    session_id TEXT NOT NULL UNIQUE,    -- 玩家的固定 ID（之後所有 API 用它）
+    failed_count INTEGER NOT NULL DEFAULT 0,
+    locked_until TEXT,
+    created_at TEXT NOT NULL
+);
 
 CREATE TABLE IF NOT EXISTS seeds (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -65,6 +78,7 @@ CREATE TABLE IF NOT EXISTS submissions (
     response_json TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_sub_stim ON submissions(stimulus_id, shared);
+CREATE INDEX IF NOT EXISTS idx_sub_session ON submissions(session_id, created_at);
 
 CREATE TABLE IF NOT EXISTS answers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -93,7 +107,116 @@ def _from_blob(blob: bytes) -> np.ndarray:
     return np.frombuffer(blob, dtype=np.float32).copy()
 
 
-class Store:
+
+# ---------------------------------------------------------------------------
+# 玩家身分（暱稱 + PIN）與個人紀錄
+# ---------------------------------------------------------------------------
+
+PIN_MAX_FAILURES = 5
+PIN_LOCK_MINUTES = 10
+
+
+def _hash_pin(pin: str, salt: str) -> str:
+    return hashlib.pbkdf2_hmac("sha256", pin.encode(), bytes.fromhex(salt), 120_000).hex()
+
+
+class LoginResult:
+    def __init__(self, status: str, nickname: str = "", session_id: str = "", is_new: bool = False,
+                 retry_minutes: int = 0):
+        self.status = status  # ok / wrong_pin / locked
+        self.nickname, self.session_id, self.is_new = nickname, session_id, is_new
+        self.retry_minutes = retry_minutes
+
+
+class _PlayerMixin:
+    """玩家身分與個人紀錄。需要子類別提供 self._conn()。"""
+
+    def login_player(self, nickname: str, pin: str, client_session_id: str) -> LoginResult:
+        """暱稱不存在 → 建立（沿用目前瀏覽器的 session，舊紀錄自動延續）；
+        已存在 → 驗證 PIN，成功後把目前瀏覽器的匿名紀錄併入玩家。
+        連錯 5 次鎖 10 分鐘。
+
+        例：Kai 在家裡電腦第一次輸入「Kai / 1234」→ 建立身分，家裡之前玩的紀錄都算 Kai 的；
+        之後在公司電腦輸入「Kai / 1234」→ 拿回同一個 session_id，看得到全部紀錄。
+        """
+        key = nickname.casefold()
+        now = datetime.now(timezone.utc)
+        with self._conn() as con:
+            row = con.execute("SELECT * FROM players WHERE nickname_key = ?", (key,)).fetchone()
+            if row is None:
+                # 目前的 session 若已屬於別的玩家，就換一個新的，避免兩人共用
+                taken = con.execute("SELECT 1 FROM players WHERE session_id = ?", (client_session_id,)).fetchone()
+                sid = uuid.uuid4().hex if taken else client_session_id
+                salt = secrets.token_hex(16)
+                con.execute(
+                    "INSERT INTO players (nickname_key, nickname, pin_hash, salt, session_id, created_at)"
+                    " VALUES (?, ?, ?, ?, ?, ?)",
+                    (key, nickname, _hash_pin(pin, salt), salt, sid, _now()),
+                )
+                return LoginResult("ok", nickname, sid, True)
+
+            if row["locked_until"] and datetime.fromisoformat(row["locked_until"]) > now:
+                left = datetime.fromisoformat(row["locked_until"]) - now
+                return LoginResult("locked", retry_minutes=max(1, int(left.total_seconds() // 60) + 1))
+
+            if not secrets.compare_digest(_hash_pin(pin, row["salt"]), row["pin_hash"]):
+                fails = row["failed_count"] + 1
+                locked = (now + timedelta(minutes=PIN_LOCK_MINUTES)).isoformat() if fails >= PIN_MAX_FAILURES else None
+                con.execute("UPDATE players SET failed_count = ?, locked_until = ? WHERE nickname_key = ?",
+                            (0 if locked else fails, locked, key))
+                if locked:
+                    return LoginResult("locked", retry_minutes=PIN_LOCK_MINUTES)
+                return LoginResult("wrong_pin")
+
+            con.execute("UPDATE players SET failed_count = 0, locked_until = NULL WHERE nickname_key = ?", (key,))
+            sid = row["session_id"]
+            # 把這個瀏覽器的匿名紀錄併進來（但不搶別的玩家的紀錄）
+            if client_session_id != sid:
+                other = con.execute("SELECT 1 FROM players WHERE session_id = ?", (client_session_id,)).fetchone()
+                if other is None:
+                    con.execute("UPDATE submissions SET session_id = ? WHERE session_id = ?", (sid, client_session_id))
+                    con.execute("UPDATE stimuli SET creator_session = ? WHERE creator_session = ?",
+                                (sid, client_session_id))
+            return LoginResult("ok", row["nickname"], sid, False)
+
+    def player_nickname(self, session_id: str) -> str | None:
+        with self._conn() as con:
+            row = con.execute("SELECT nickname FROM players WHERE session_id = ?", (session_id,)).fetchone()
+        return row["nickname"] if row else None
+
+    def history(self, session_id: str, limit: int = 100) -> list[HistoryItem]:
+        with self._conn() as con:
+            rows = con.execute(
+                "SELECT s.id, s.stimulus_id, s.created_at, s.shared, s.fingerprint_raw, s.response_json, t.word"
+                " FROM submissions s JOIN stimuli t ON t.id = s.stimulus_id"
+                " WHERE s.session_id = ? ORDER BY s.created_at DESC LIMIT ?",
+                (session_id, limit),
+            ).fetchall()
+        items = []
+        for r in rows:
+            fp = json.loads(r["fingerprint_raw"])
+            interp = json.loads(r["response_json"]).get("interpretation") or {}
+            items.append(HistoryItem(
+                submission_id=r["id"], stimulus_id=r["stimulus_id"], stimulus_word=r["word"],
+                created_at=datetime.fromisoformat(r["created_at"]),
+                fluency=fp.get("fluency"), distance=fp.get("distance"),
+                headline=interp.get("headline"), shared=bool(r["shared"]),
+            ))
+        return items
+
+    def get_submission(self, submission_id: str, session_id: str) -> tuple[AnalysisResponse, bool] | None:
+        """只有本人拿得到；回傳 (當時的分析結果, 是否已分享)。"""
+        with self._conn() as con:
+            row = con.execute(
+                "SELECT response_json, shared FROM submissions WHERE id = ? AND session_id = ?",
+                (submission_id, session_id),
+            ).fetchone()
+        if row is None:
+            return None
+        return AnalysisResponse.model_validate_json(row["response_json"]), bool(row["shared"])
+
+
+class Store(_PlayerMixin):
     def __init__(self, db_path: Path):
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -472,3 +595,4 @@ class Store:
             seed_points=int(seeds),
             enough_for_percentile=int(users) >= min_users,
         )
+
