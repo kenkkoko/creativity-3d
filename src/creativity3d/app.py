@@ -72,6 +72,15 @@ def create_app(settings: Settings | None = None, *, seed_on_startup: bool = True
 
     app = FastAPI(title="創造力 3D", version="0.1.0", lifespan=lifespan)
 
+    @app.middleware("http")
+    async def no_stale_frontend(request: Request, call_next):
+        # 前端檔案每次都向伺服器確認是否有更新（有 ETag，沒變就回 304，不會變慢），
+        # 避免更新程式後瀏覽器還在用舊版 app.js
+        response = await call_next(request)
+        if request.url.path == "/" or request.url.path.startswith("/static/"):
+            response.headers["Cache-Control"] = "no-cache"
+        return response
+
     @app.exception_handler(AppError)
     async def app_error(_: Request, exc: AppError) -> JSONResponse:
         return _error(exc.code, exc.message, exc.status)
