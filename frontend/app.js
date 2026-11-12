@@ -500,9 +500,19 @@ async function loadHistory() {
   }
 }
 
+function setHistoryEditing(on) {
+  state.historyEditing = !!on && (state.history || []).length > 0;
+  $("#historySection").classList.toggle("editing", state.historyEditing);
+  const btn = $("#historyEdit");
+  btn.textContent = state.historyEditing ? "完成" : "刪除";
+  btn.setAttribute("aria-pressed", String(state.historyEditing));
+}
+
 function renderHistory() {
   const list = state.history || [];
   $("#historyCount").textContent = list.length ? `共 ${list.length} 筆` : "";
+  $("#historyEdit").hidden = list.length === 0;
+  if (!list.length) setHistoryEditing(false);
   if (!list.length) {
     $("#history").innerHTML = `<span class="muted">還沒有紀錄，選一個詞開始吧</span>`;
     return;
@@ -512,7 +522,7 @@ function renderHistory() {
     const n = typeof h.fluency === "number" ? Math.round(h.fluency) : "—";
     return `
     <div class="hist-item">
-    <button type="button" class="hist-del" data-del="${esc(h.submission_id)}" aria-label="刪除「${esc(h.stimulus_word)}」這筆紀錄">刪除</button>
+    <button type="button" class="hist-del" data-del="${esc(h.submission_id)}" aria-label="刪除「${esc(h.stimulus_word)}」這筆紀錄" title="刪除">×</button>
     <button type="button" class="hist-card" data-sub="${esc(h.submission_id)}">
       <span class="hist-top">
         <span class="hist-word">${esc(h.stimulus_word)}</span>
@@ -967,6 +977,7 @@ function bind() {
     const del = ev.target.closest("[data-del]");
     if (del) { openDelete(del.dataset.del); return; }
     const sub = ev.target.closest("[data-sub]");
+    if (sub && state.historyEditing) { openDelete(sub.dataset.sub); return; }  // 刪除模式下點卡片＝刪除
     if (sub) { openSubmission(sub.dataset.sub, sub); return; }
     const star = ev.target.closest("[data-star]");
     if (star && state.map) state.map.select(+star.dataset.star);
@@ -1012,6 +1023,7 @@ function bind() {
   $("#consentBtn").addEventListener("click", onConsent);
   $("#againBtn").addEventListener("click", goHome);
   $("#reanalyzeBtn").addEventListener("click", reanalyze);
+  $("#historyEdit").addEventListener("click", () => setHistoryEditing(!state.historyEditing));
   $("#deleteCancel").addEventListener("click", closeDelete);
   $("#deleteConfirm").addEventListener("click", confirmDelete);
   $("#deleteModal").addEventListener("click", (ev) => { if (ev.target.id === "deleteModal") closeDelete(); });
