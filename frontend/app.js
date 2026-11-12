@@ -36,7 +36,29 @@ function getSessionId() {
     return memorySessionId;
   }
 }
-const SESSION = getSessionId();
+let SESSION = getSessionId();
+function setSessionId(id) {
+  SESSION = id;
+  memorySessionId = id;
+  try { localStorage.setItem("c3d.session", id); } catch { /* 忽略 */ }
+}
+
+// ---------------------------------------------------------------------------
+// 玩家暱稱（localStorage；失敗時用記憶體變數）
+// ---------------------------------------------------------------------------
+const NICK_KEY = "c3d_nickname";
+const NICK_RE = /^[\p{Script=Han}A-Za-z0-9_]{1,12}$/u;
+const PIN_RE = /^\d{4}$/;
+let memoryNickname = null;
+function getNickname() {
+  try { return localStorage.getItem(NICK_KEY) || null; } catch { return memoryNickname; }
+}
+function setNickname(name) {
+  memoryNickname = name || null;
+  try {
+    if (name) localStorage.setItem(NICK_KEY, name); else localStorage.removeItem(NICK_KEY);
+  } catch { /* 忽略 */ }
+}
 
 // ---------------------------------------------------------------------------
 // API（含 mock）
@@ -72,7 +94,7 @@ async function http(path, { method = "GET", body, query } = {}) {
   return json;
 }
 
-const mockState = { stimuli: null, pending: new Map() };
+const mockState = { stimuli: null, history: null, pending: new Map() };
 async function mockJson(name) {
   const r = await fetch(`/static/mock/${name}`);
   if (!r.ok) throw new ApiError(`找不到 mock/${name}`);
@@ -118,7 +140,34 @@ const api = MOCK ? {
   },
   async consent(submissionId) {
     await sleep(400);
+    const h = mockState.history?.find((x) => x.submission_id === submissionId);
+    if (h) h.shared = true;
     return { submission_id: submissionId, shared: true, message: "已匿名加入星圖，謝謝你！" };
+  },
+  async login({ nickname, pin }) {
+    await sleep(400);
+    if (!NICK_RE.test(nickname) || !PIN_RE.test(pin)) throw new ApiError("暱稱或 PIN 格式不正確。", "invalid_input", 400);
+    if (pin === "0000") throw new ApiError("暱稱或 PIN 不正確。", "auth_failed", 401); // 方便測錯誤狀態
+    const p = await mockJson("player.json");
+    return { ...p, nickname };
+  },
+  async player() {
+    return { nickname: getNickname() };
+  },
+  async history() {
+    if (!mockState.history) mockState.history = await mockJson("history.json");
+    return structuredClone(mockState.history);
+  },
+  async submission(id) {
+    await sleep(500);
+    const data = await mockJson("analysis.json");
+    const h = mockState.history?.find((x) => x.submission_id === id);
+    if (h) {
+      data.submission_id = h.submission_id;
+      data.stimulus = { ...data.stimulus, id: h.stimulus_id, word: h.stimulus_word };
+      data.created_at = h.created_at;
+    }
+    return data;
   },
 } : {
   config: () => http("/api/config"),
@@ -127,6 +176,10 @@ const api = MOCK ? {
   publish: (id) => http(`/api/stimuli/${encodeURIComponent(id)}/publish`, { method: "POST", body: { client_session_id: SESSION, confirm_publish: true } }),
   submit: (payload) => http("/api/submit", { method: "POST", body: payload }),
   consent: (submissionId) => http("/api/consent", { method: "POST", query: { client_session_id: SESSION }, body: { submission_id: submissionId, agree_to_share: true } }),
+  login: ({ nickname, pin }) => http("/api/player/login", { method: "POST", body: { nickname, pin, client_session_id: SESSION } }),
+  player: () => http("/api/player", { query: { client_session_id: SESSION } }),
+  history: () => http("/api/history", { query: { client_session_id: SESSION } }),
+  submission: (id) => http(`/api/submissions/${encodeURIComponent(id)}`, { query: { client_session_id: SESSION } }),
 };
 
 // ---------------------------------------------------------------------------
@@ -145,6 +198,10 @@ const state = {
   result: null,
   map: null,
   polling: null,
+  nickname: null,
+  history: null,     // null = 尚未載入
+  historyToken: 0,
+  resultShared: false, // 目前結果頁這筆是否已分享（重看舊紀錄時用）
 };
 
 // ---------------------------------------------------------------------------
@@ -157,12 +214,12 @@ function show(view) {
 }
 
 let toastTimer = null;
-function toast(msg) {
+function toast(msg, ms = 2600) {
   const el = $("#toast");
   el.textContent = msg;
   el.hidden = false;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { el.hidden = true; }, 2600);
+  toastTimer = setTimeout(() => { el.hidden = true; }, ms);
 }
 
 function setMsg(el, text, kind = "") {
@@ -217,6 +274,7 @@ function renderHome(highlightId) {
 }
 
 function goHome() {
+  if (!state.nickname) { showLogin(); return; }
   stopTimer();
   disposeMap();
   state.current = null;
@@ -224,6 +282,7 @@ function goHome() {
   state.result = null;
   show("home");
   loadStimuli();
+  loadHistory();
 }
 
 async function onAddStimulus(ev) {
@@ -328,6 +387,158 @@ async function confirmPublish() {
   } catch (e) {
     setMsg($("#publishMsg"), esc(e.message), "err");
     btn.disabled = false;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 玩家身分（暱稱 + PIN）
+// ---------------------------------------------------------------------------
+function renderWho() {
+  const who = $("#who");
+  if (state.nickname) {
+    $("#whoName").textContent = state.nickname;
+    who.hidden = false;
+  } else {
+    who.hidden = true;
+  }
+}
+
+function showLogin() {
+  stopTimer();
+  disposeMap();
+  state.polling = null;
+  state.current = null;
+  state.items = [];
+  state.result = null;
+  state.history = null;
+  state.historyToken += 1;
+  renderWho();
+  $("#loginPin").value = "";
+  setMsg($("#loginMsg"), "");
+  $("#loginBtn").disabled = false;
+  show("login");
+  setTimeout(() => ($("#loginNick").value ? $("#loginPin") : $("#loginNick")).focus(), 50);
+}
+
+function enterHome() {
+  renderWho();
+  show("home");
+  loadStimuli();
+  loadHistory();
+}
+
+async function onLogin(ev) {
+  ev.preventDefault();
+  const nickname = $("#loginNick").value.trim();
+  const pin = $("#loginPin").value.trim();
+  const msg = $("#loginMsg");
+  if (!nickname) { setMsg(msg, "請輸入暱稱。", "err"); $("#loginNick").focus(); return; }
+  if (!NICK_RE.test(nickname)) {
+    setMsg(msg, "暱稱需為 1–12 個字，只能用中文、英文、數字或底線。", "err");
+    $("#loginNick").focus();
+    return;
+  }
+  if (!PIN_RE.test(pin)) { setMsg(msg, "PIN 必須剛好是 4 位數字。", "err"); $("#loginPin").focus(); return; }
+
+  const btn = $("#loginBtn");
+  btn.disabled = true;
+  setMsg(msg, `<span class="spinner"></span>確認中…`);
+  try {
+    const r = await api.login({ nickname, pin });
+    if (r?.session_id) setSessionId(r.session_id);
+    const name = r?.nickname || nickname;
+    setNickname(name);
+    state.nickname = name;
+    state.stimuli = [];
+    $("#loginPin").value = "";
+    setMsg(msg, "");
+    enterHome();
+    if (r?.is_new) toast(`歡迎，${name}！已建立你的身分，記住你的 PIN`, 5000);
+    else toast(`歡迎回來，${name}`);
+  } catch (e) {
+    setMsg(msg, esc(e.message || "登入失敗，請稍後再試。"), "err");
+    if (e.code === "auth_failed") { $("#loginPin").value = ""; $("#loginPin").focus(); }
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function switchIdentity() {
+  setNickname(null);
+  state.nickname = null;
+  setSessionId(newId());
+  state.stimuli = [];
+  $("#loginNick").value = "";
+  showLogin();
+}
+
+// ---------------------------------------------------------------------------
+// 我的紀錄
+// ---------------------------------------------------------------------------
+const DATE_FMT = new Intl.DateTimeFormat("zh-TW", {
+  year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false,
+});
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? "" : DATE_FMT.format(d);
+}
+
+async function loadHistory() {
+  if (!state.nickname) return;
+  const token = ++state.historyToken;
+  const box = $("#history");
+  if (state.history === null) box.innerHTML = `<span class="muted"><span class="spinner inline"></span>載入中…</span>`;
+  try {
+    const list = await api.history();
+    if (token !== state.historyToken) return;
+    state.history = Array.isArray(list) ? list : [];
+    renderHistory();
+  } catch (e) {
+    if (token !== state.historyToken) return;
+    box.innerHTML = `<span class="muted">紀錄載入失敗：${esc(e.message)}</span>`;
+  }
+}
+
+function renderHistory() {
+  const list = state.history || [];
+  $("#historyCount").textContent = list.length ? `共 ${list.length} 筆` : "";
+  if (!list.length) {
+    $("#history").innerHTML = `<span class="muted">還沒有紀錄，選一個詞開始吧</span>`;
+    return;
+  }
+  $("#history").innerHTML = list.map((h) => {
+    const dist = typeof h.distance === "number" ? h.distance.toFixed(2) : "—";
+    const n = typeof h.fluency === "number" ? Math.round(h.fluency) : "—";
+    return `
+    <button type="button" class="hist-card" data-sub="${esc(h.submission_id)}">
+      <span class="hist-top">
+        <span class="hist-word">${esc(h.stimulus_word)}</span>
+        ${h.shared ? `<span class="badge-shared">已分享</span>` : ""}
+      </span>
+      <span class="hist-date">${esc(fmtDate(h.created_at))}</span>
+      <span class="hist-meta">想了 ${n} 則<i>·</i>距離 ${dist}</span>
+      ${h.headline ? `<span class="hist-headline">${esc(h.headline)}</span>` : ""}
+    </button>`;
+  }).join("");
+}
+
+let openingSub = null;
+async function openSubmission(id, el) {
+  if (openingSub) return;
+  const h = (state.history || []).find((x) => x.submission_id === id);
+  openingSub = id;
+  el?.classList.add("loading");
+  el?.setAttribute("aria-busy", "true");
+  try {
+    const data = await api.submission(id);
+    if (document.body.dataset.view !== "home") return; // 使用者已離開
+    showResult(data, { shared: typeof data?.shared === "boolean" ? data.shared : !!h?.shared });
+  } catch (e) {
+    toast(e.message || "讀取紀錄失敗，請稍後再試。");
+  } finally {
+    openingSub = null;
+    el?.classList.remove("loading");
+    el?.removeAttribute("aria-busy");
   }
 }
 
@@ -583,8 +794,9 @@ const DEFAULT_INTERP = {
   suggestions: ["點星星看看聯想橋，想想看還有哪些方向沒有走過。"],
 };
 
-async function showResult(data) {
+async function showResult(data, { shared = false } = {}) {
   state.result = data;
+  state.resultShared = shared;
   show("result");
 
   const interp = data.interpretation || DEFAULT_INTERP;
@@ -610,12 +822,22 @@ async function showResult(data) {
   }).join("");
 
   // 同意分享
-  $("#consentCheck").checked = false;
-  $("#consentCheck").disabled = false;
-  $("#consentBtn").disabled = true;
-  $("#consentBtn").hidden = false;
-  $("#consentBox").classList.remove("done");
-  setMsg($("#consentMsg"), "");
+  if (shared) {
+    // 重看已分享的舊紀錄：不可再送
+    $("#consentCheck").checked = true;
+    $("#consentCheck").disabled = true;
+    $("#consentBtn").disabled = true;
+    $("#consentBtn").hidden = true;
+    $("#consentBox").classList.add("done");
+    setMsg($("#consentMsg"), "已加入星圖", "ok");
+  } else {
+    $("#consentCheck").checked = false;
+    $("#consentCheck").disabled = false;
+    $("#consentBtn").disabled = true;
+    $("#consentBtn").hidden = false;
+    $("#consentBox").classList.remove("done");
+    setMsg($("#consentMsg"), "");
+  }
 
   // 3D 星圖
   disposeMap();
@@ -647,13 +869,16 @@ function disposeMap() {
 }
 
 async function onConsent() {
-  if (!$("#consentCheck").checked || !state.result) return;
+  if (!$("#consentCheck").checked || !state.result || state.resultShared) return;
   const btn = $("#consentBtn");
   btn.disabled = true;
   setMsg($("#consentMsg"), `<span class="spinner"></span>寫入中…`);
   try {
     const r = await api.consent(state.result.submission_id);
     if (r.shared) {
+      state.resultShared = true;
+      const h = (state.history || []).find((x) => x.submission_id === state.result.submission_id);
+      if (h) h.shared = true;
       $("#consentBox").classList.add("done");
       $("#consentCheck").disabled = true;
       btn.hidden = true;
@@ -689,11 +914,19 @@ function bind() {
     }
     const pub = ev.target.closest("[data-publish]");
     if (pub) { openPublish(pub.dataset.publish); return; }
+    const sub = ev.target.closest("[data-sub]");
+    if (sub) { openSubmission(sub.dataset.sub, sub); return; }
     const star = ev.target.closest("[data-star]");
     if (star && state.map) state.map.select(+star.dataset.star);
   });
 
   $("#addForm").addEventListener("submit", onAddStimulus);
+  $("#loginForm").addEventListener("submit", onLogin);
+  $("#loginPin").addEventListener("input", (ev) => {
+    const v = ev.target.value.replace(/\D/g, "").slice(0, 4);
+    if (v !== ev.target.value) ev.target.value = v;
+  });
+  $("#switchBtn").addEventListener("click", switchIdentity);
 
   const input = $("#answerInput");
   input.addEventListener("input", updateCounter);
@@ -737,12 +970,34 @@ function bind() {
 async function init() {
   $("#mockBadge").hidden = !MOCK;
   bind();
-  show("home");
-  try {
-    const cfg = await api.config();
+  const configP = api.config().then((cfg) => {
     if (cfg && typeof cfg.answer_seconds === "number" && cfg.answer_seconds > 0) state.config = { ...state.config, ...cfg };
-  } catch { /* 用預設 180 秒 */ }
-  await loadStimuli();
+  }).catch(() => { /* 用預設 180 秒 */ });
+
+  const saved = getNickname();
+  if (!saved) {
+    showLogin();
+    await configP;
+    return;
+  }
+  // 有暱稱：先照本機狀態進首頁，再跟伺服器確認身分
+  state.nickname = saved;
+  $("#loginNick").value = saved;
+  enterHome();
+  try {
+    const p = await api.player();
+    if (!p?.nickname) {
+      setNickname(null);
+      state.nickname = null;
+      showLogin();
+      setMsg($("#loginMsg"), "身分已失效，請重新輸入暱稱和 PIN。", "err");
+    } else if (p.nickname !== saved) {
+      setNickname(p.nickname);
+      state.nickname = p.nickname;
+      renderWho();
+    }
+  } catch { /* 連不上時沿用本機暱稱 */ }
+  await configP;
 }
 
 init();

@@ -21,11 +21,40 @@
 <body>
 <header class="topbar">
   <a class="brand" href="#" data-action="home"><span class="brand-dot"></span>Creativity 3D</a>
-  <span class="mock-badge" id="mockBadge" hidden>MOCK 資料</span>
+  <div class="topbar-right">
+    <span class="mock-badge" id="mockBadge" hidden>MOCK 資料</span>
+    <div class="who" id="who" hidden>
+      <span class="who-dot" aria-hidden="true"></span>
+      <span class="who-name" id="whoName"></span>
+      <span class="who-sep" aria-hidden="true">·</span>
+      <button type="button" class="who-switch" id="switchBtn">切換身分</button>
+    </div>
+  </div>
 </header>
 
+<!-- 登入：暱稱 + PIN -->
+<section class="view" id="view-login" data-view="login" hidden>
+  <main class="login">
+    <form class="card login-card" id="loginForm" autocomplete="off" novalidate>
+      <div class="eyebrow">Creativity 3D · 身分</div>
+      <h1 class="login-title">你是誰？</h1>
+      <label class="field">
+        <span class="field-label">暱稱</span>
+        <input id="loginNick" type="text" maxlength="12" placeholder="例如 Kai" autocomplete="nickname" spellcheck="false" aria-describedby="loginHint" />
+      </label>
+      <label class="field">
+        <span class="field-label">4 位數 PIN</span>
+        <input id="loginPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="••••" autocomplete="off" aria-describedby="loginHint" />
+      </label>
+      <p class="login-hint" id="loginHint">第一次輸入會建立身分；之後在任何裝置輸入同樣的暱稱和 PIN 就能找回紀錄</p>
+      <button class="btn btn-primary wide login-btn" type="submit" id="loginBtn">開始</button>
+      <div class="form-msg" id="loginMsg" role="status" aria-live="polite"></div>
+    </form>
+  </main>
+</section>
+
 <!-- 首頁 -->
-<section class="view" id="view-home" data-view="home">
+<section class="view" id="view-home" data-view="home" hidden>
   <main class="home">
     <div class="eyebrow">Creativity 3D · 聯想星圖</div>
     <h1>看見你的<span class="accent-text">聯想</span>跳了多遠</h1>
@@ -50,6 +79,11 @@
         <button class="btn btn-primary" type="submit" id="addBtn">新增</button>
       </form>
       <div class="form-msg" id="addMsg" role="status" aria-live="polite"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>我的紀錄</h2><span class="label" id="historyCount"></span></div>
+      <div class="history" id="history"><span class="muted">載入中…</span></div>
     </section>
   </main>
 </section>

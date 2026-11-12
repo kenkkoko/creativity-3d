@@ -94,12 +94,12 @@ p.lead { font-size: 17px; line-height: 1.75; max-width: 600px; margin: 0; }
 .form-msg.ok { color: var(--ok); }
 .form-msg .spinner { display: inline-block; vertical-align: -1px; margin-right: 8px; }
 
-input[type="text"] {
+input[type="text"], input[type="password"] {
   width: 100%; padding: 12px 18px; border-radius: 999px; border: 1px solid var(--line);
   background: rgba(255,255,255,.03); color: var(--ink); outline: none; font-size: 15px;
   transition: border-color .3s var(--ease), background .3s var(--ease);
 }
-input[type="text"]:focus { border-color: rgba(255,255,255,.3); background: rgba(255,255,255,.06); }
+input[type="text"]:focus, input[type="password"]:focus { border-color: rgba(255,255,255,.3); background: rgba(255,255,255,.06); }
 input::placeholder { color: var(--faint); }
 
 .check { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; font-size: 13px; line-height: 1.6; color: var(--text); }
@@ -116,6 +116,54 @@ input::placeholder { color: var(--faint); }
 .home { max-width: 880px; margin: 0 auto; padding: 112px 24px 96px; }
 .add-form { display: flex; gap: 10px; margin-top: 20px; }
 .add-form input { flex: 1; }
+
+/* ---- 頂欄：玩家身分 ---- */
+.topbar-right { display: inline-flex; align-items: center; gap: 10px; }
+.who {
+  display: inline-flex; align-items: center; gap: 8px; padding: 5px 6px 5px 14px; border-radius: 999px;
+  background: rgba(8,8,10,.55); border: 1px solid var(--line); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  font-size: 13px; color: var(--ink);
+}
+body:not([data-view="home"]) .who { display: none; }
+.who-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--me); box-shadow: 0 0 8px var(--me); }
+.who-name { font-weight: 600; max-width: 12em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.who-sep { color: var(--faint); }
+.who-switch { border: none; background: transparent; color: var(--muted); font-size: 12px; padding: 5px 10px; border-radius: 999px; cursor: pointer; transition: background .2s var(--ease), color .2s var(--ease); }
+.who-switch:hover { background: var(--glass-2); color: var(--ink); }
+.who-switch:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* ---- 登入 ---- */
+.login { min-height: 100vh; display: grid; place-items: center; padding: 88px 24px 48px; }
+.login-card { width: min(420px, 100%); margin: 0; padding: 34px 32px 26px; box-shadow: 0 30px 80px rgba(0,0,0,.45); }
+.login-title { font-size: clamp(32px, 5vw, 40px); margin: 10px 0 24px; }
+.field { display: block; margin-top: 14px; }
+.field-label { display: block; margin: 0 0 8px 4px; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; color: var(--muted); text-transform: uppercase; }
+#loginPin { font-family: var(--mono); letter-spacing: .5em; font-size: 18px; }
+#loginPin::placeholder { letter-spacing: .5em; }
+.login-hint { font-size: 13px; line-height: 1.7; color: var(--muted); margin: 16px 4px 0; }
+.login-btn { margin-top: 22px; padding: 12px 20px; font-size: 15px; }
+
+/* ---- 我的紀錄 ---- */
+.history { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.history > .muted { grid-column: 1 / -1; }
+.spinner.inline { display: inline-block; vertical-align: -1px; margin-right: 8px; }
+.hist-card {
+  position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left;
+  padding: 16px 18px; border-radius: 16px; border: 1px solid var(--line); background: var(--glass-2);
+  color: var(--text); cursor: pointer;
+  transition: border-color .3s var(--ease), background .3s var(--ease), transform .3s var(--ease), opacity .3s var(--ease);
+}
+.hist-card:hover { border-color: rgba(255,255,255,.3); background: rgba(255,255,255,.1); transform: translateY(-2px); }
+.hist-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.hist-card.loading { opacity: .6; cursor: progress; }
+.hist-card.loading::after { content: ""; position: absolute; top: 18px; right: 18px; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--faint); border-top-color: var(--accent); animation: spin .8s linear infinite; }
+.hist-top { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 8px; }
+.hist-word { color: var(--ink); font-size: 26px; font-weight: 800; letter-spacing: .03em; line-height: 1.2; }
+.hist-date { font-family: var(--mono); font-size: 11px; color: var(--faint); letter-spacing: .04em; }
+.hist-meta { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 6px; }
+.hist-meta i { font-style: normal; color: var(--faint); margin: 0 6px; }
+.hist-headline { font-size: 13px; color: var(--accent); line-height: 1.5; margin-top: 2px; }
+.badge-shared { flex: none; padding: 2px 9px; border-radius: 999px; font-size: 11px; color: var(--ok); background: rgba(74,222,128,.1); border: 1px solid rgba(74,222,128,.25); }
 
 /* ---- 作答頁 ---- */
 .answer { max-width: 640px; margin: 0 auto; padding: 88px 24px 96px; }

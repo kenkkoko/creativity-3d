@@ -1,0 +1,32 @@
+[
+  {
+    "submission_id": "mock-sub-0003",
+    "stimulus_id": "s07",
+    "stimulus_word": "紅色",
+    "created_at": "2026-11-12T14:32:10+08:00",
+    "fluency": 9,
+    "distance": 0.58,
+    "headline": null,
+    "shared": false
+  },
+  {
+    "submission_id": "mock-sub-0001",
+    "stimulus_id": "s09",
+    "stimulus_word": "蘋果",
+    "created_at": "2026-11-10T21:05:44+08:00",
+    "fluency": 14,
+    "distance": 0.67,
+    "headline": "故事型遠跳者",
+    "shared": true
+  },
+  {
+    "submission_id": "mock-sub-0002",
+    "stimulus_id": "s01",
+    "stimulus_word": "時間",
+    "created_at": "2026-11-08T09:18:02+08:00",
+    "fluency": 11,
+    "distance": 0.72,
+    "headline": "抽象的遠征者",
+    "shared": false
+  }
+]
