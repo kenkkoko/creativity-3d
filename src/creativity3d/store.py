@@ -229,6 +229,18 @@ class _PlayerMixin:
         data = _clean_legacy_response(json.loads(row["response_json"]))
         return AnalysisResponse.model_validate(data), bool(row["shared"])
 
+    def delete_submission(self, submission_id: str, session_id: str) -> bool:
+        """刪除一筆作答（只有本人可以）。已分享的話，這筆答案也會一起從公共星雲移除。
+        回傳是否真的刪到。"""
+        with self._conn() as con:
+            row = con.execute("SELECT 1 FROM submissions WHERE id = ? AND session_id = ?",
+                              (submission_id, session_id)).fetchone()
+            if row is None:
+                return False
+            con.execute("DELETE FROM answers WHERE submission_id = ?", (submission_id,))
+            con.execute("DELETE FROM submissions WHERE id = ?", (submission_id,))
+        return True
+
     def answer_vectors(self, submission_id: str) -> np.ndarray | None:
         """依 idx 順序回傳這次作答每則答案的向量。"""
         with self._conn() as con:

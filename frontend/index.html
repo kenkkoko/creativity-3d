@@ -199,6 +199,19 @@
 </section>
 
 <!-- 公開確認 -->
+<div class="modal" id="deleteModal" hidden role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
+  <div class="modal-card">
+    <div class="eyebrow">刪除紀錄</div>
+    <h2 id="deleteTitle">刪除「<span id="deleteWord"></span>」這筆紀錄？</h2>
+    <p><span id="deleteWhen"></span> 的作答會永久刪除，無法復原。</p>
+    <p id="deleteShared" hidden>這筆答案已經加入公共星圖，刪除後也會從星圖中移除。</p>
+    <div class="form-msg" id="deleteMsg" role="status" aria-live="polite"></div>
+    <div class="row end">
+      <button class="btn btn-ghost" type="button" id="deleteCancel">取消</button>
+      <button class="btn btn-danger" type="button" id="deleteConfirm">刪除</button>
+    </div>
+  </div>
+</div>
 <div class="modal" id="publishModal" hidden role="dialog" aria-modal="true" aria-labelledby="publishTitle">
   <div class="modal-card">
     <div class="eyebrow">公開到社群</div>

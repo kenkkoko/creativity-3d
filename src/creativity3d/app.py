@@ -204,6 +204,14 @@ def create_app(settings: Settings | None = None, *, seed_on_startup: bool = True
             response = response.model_copy(update={"warnings": [*response.warnings, "這次的答案已加入星圖。"]})
         return response
 
+    @app.delete("/api/submissions/{submission_id}")
+    def delete_submission(submission_id: str, request: Request,
+                          client_session_id: str = Query(min_length=8, max_length=64)) -> dict:
+        if not svc_of(request).store.delete_submission(submission_id, client_session_id):
+            raise AppError(ErrorCode.unknown_stimulus, "找不到這筆紀錄，或你不是作答者。", 404)
+        log.info("刪除紀錄：%s", submission_id)
+        return {"deleted": True, "submission_id": submission_id}
+
     if FRONTEND_DIR.exists():
         app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 

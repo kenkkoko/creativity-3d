@@ -52,3 +52,24 @@ def test_legacy_blank_strength_is_cleaned():
     assert _clean_legacy_response(d)["interpretation"]["strengths"] == ["你的答案非常貼切"]
     d2 = {"interpretation": {"headline": "x", "strengths": ["  "], "suggestions": ["好的建議"], "cited_numbers": []}}
     assert _clean_legacy_response(d2)["interpretation"] is None
+
+
+def test_delete_submission_owner_only(tmp_path):
+    from datetime import datetime, timezone
+    from creativity3d.schemas import (AnalysisResponse, DimensionScore, Fingerprint, PoolStats,
+                                      Stimulus, StimulusSource)
+    st = Store(tmp_path / "d.sqlite")
+    stim = Stimulus(id="s07", word="紅色", source=StimulusSource.preset, abstraction_level=7)
+    st.ensure_presets([stim])
+    d = DimensionScore(raw=None)
+    resp = AnalysisResponse(submission_id="pending", stimulus=stim, associations=[],
+                            fingerprint=Fingerprint(distance=d, breadth=d, rarity=d, appropriateness=d, fluency=d),
+                            interpretation=None, pool=PoolStats(stimulus_id="s07", human_users=0, seed_points=0,
+                                                                enough_for_percentile=False),
+                            cloud=[], created_at=datetime.now(timezone.utc))
+    sid = st.save_submission(stimulus_id="s07", session_id="ownerAAAA", response=resp, vecs=np.zeros((0, 8), np.float32))
+    assert not st.delete_submission(sid, "otherBBBB")       # 別人刪不掉
+    assert st.history("ownerAAAA")
+    assert st.delete_submission(sid, "ownerAAAA")
+    assert st.history("ownerAAAA") == []
+    assert not st.delete_submission(sid, "ownerAAAA")       # 已刪除
