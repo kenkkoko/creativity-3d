@@ -1,0 +1,742 @@
+{
+  "Stimulus": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "description": "刺激詞代號，例如 s05",
+        "title": "Id",
+        "type": "string"
+      },
+      "word": {
+        "description": "中文刺激詞，例如 藝術",
+        "title": "Word",
+        "type": "string"
+      },
+      "abstraction_level": {
+        "description": "1=最抽象，10=最具象",
+        "maximum": 10,
+        "minimum": 1,
+        "title": "Abstraction Level",
+        "type": "integer"
+      },
+      "source_note": {
+        "description": "抽象程度的依據說明",
+        "title": "Source Note",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "word",
+      "abstraction_level",
+      "source_note"
+    ],
+    "title": "Stimulus",
+    "type": "object"
+  },
+  "SubmitRequest": {
+    "$defs": {
+      "AssociationInput": {
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "description": "使用者寫下的聯想（中文）",
+            "maxLength": 20,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "選填：我怎麼想到的",
+            "title": "Note"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "AssociationInput",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "stimulus_id": {
+        "title": "Stimulus Id",
+        "type": "string"
+      },
+      "associations": {
+        "items": {
+          "$ref": "#/$defs/AssociationInput"
+        },
+        "maxItems": 60,
+        "minItems": 1,
+        "title": "Associations",
+        "type": "array"
+      },
+      "elapsed_seconds": {
+        "description": "實際作答秒數",
+        "maximum": 600,
+        "minimum": 0,
+        "title": "Elapsed Seconds",
+        "type": "integer"
+      },
+      "client_session_id": {
+        "description": "瀏覽器產生的匿名 ID，不含個資",
+        "maxLength": 64,
+        "minLength": 8,
+        "title": "Client Session Id",
+        "type": "string"
+      }
+    },
+    "required": [
+      "stimulus_id",
+      "associations",
+      "elapsed_seconds",
+      "client_session_id"
+    ],
+    "title": "SubmitRequest",
+    "type": "object"
+  },
+  "LlmJudgementBatch": {
+    "$defs": {
+      "LlmJudgement": {
+        "additionalProperties": false,
+        "description": "LLM 對「單一聯想」的判斷。交給 Ollama 做 Structured Output。",
+        "properties": {
+          "index": {
+            "description": "對應輸入清單中的位置",
+            "minimum": 0,
+            "title": "Index",
+            "type": "integer"
+          },
+          "verdict": {
+            "$ref": "#/$defs/Verdict"
+          },
+          "bridge": {
+            "description": "從刺激詞走到聯想的中間概念，0～3 個；verdict=unreasonable 時必須為空",
+            "items": {
+              "maxLength": 12,
+              "type": "string"
+            },
+            "maxItems": 3,
+            "title": "Bridge",
+            "type": "array"
+          },
+          "reason": {
+            "description": "一句話理由，繁體中文",
+            "maxLength": 60,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "index",
+          "verdict",
+          "bridge",
+          "reason"
+        ],
+        "title": "LlmJudgement",
+        "type": "object"
+      },
+      "Verdict": {
+        "enum": [
+          "reasonable",
+          "borderline",
+          "unreasonable"
+        ],
+        "title": "Verdict",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "一次判斷多則聯想（減少 LLM 呼叫次數）。",
+    "properties": {
+      "judgements": {
+        "items": {
+          "$ref": "#/$defs/LlmJudgement"
+        },
+        "title": "Judgements",
+        "type": "array"
+      }
+    },
+    "required": [
+      "judgements"
+    ],
+    "title": "LlmJudgementBatch",
+    "type": "object"
+  },
+  "LlmInterpretation": {
+    "additionalProperties": false,
+    "description": "LLM 寫的解讀。只能引用 Fingerprint 裡的數字。",
+    "properties": {
+      "headline": {
+        "description": "一句話標題，例如「遠跳型探險家」",
+        "maxLength": 30,
+        "title": "Headline",
+        "type": "string"
+      },
+      "strengths": {
+        "items": {
+          "maxLength": 60,
+          "type": "string"
+        },
+        "maxItems": 3,
+        "minItems": 1,
+        "title": "Strengths",
+        "type": "array"
+      },
+      "suggestions": {
+        "items": {
+          "maxLength": 60,
+          "type": "string"
+        },
+        "maxItems": 3,
+        "minItems": 1,
+        "title": "Suggestions",
+        "type": "array"
+      },
+      "cited_numbers": {
+        "description": "解讀中引用到的所有數字，系統會逐一比對 Fingerprint，不符就重試",
+        "items": {
+          "type": "number"
+        },
+        "title": "Cited Numbers",
+        "type": "array"
+      }
+    },
+    "required": [
+      "headline",
+      "strengths",
+      "suggestions",
+      "cited_numbers"
+    ],
+    "title": "LlmInterpretation",
+    "type": "object"
+  },
+  "AnalysisResponse": {
+    "$defs": {
+      "CloudPoint": {
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "position": {
+            "$ref": "#/$defs/Point3D"
+          },
+          "source": {
+            "pattern": "^(human|seed)$",
+            "title": "Source",
+            "type": "string"
+          },
+          "count": {
+            "description": "相同或極相近答案被幾個人寫過",
+            "minimum": 1,
+            "title": "Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "text",
+          "position",
+          "source",
+          "count"
+        ],
+        "title": "CloudPoint",
+        "type": "object"
+      },
+      "DimensionScore": {
+        "additionalProperties": false,
+        "properties": {
+          "raw": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "原始值；資料不足時為 null",
+            "title": "Raw"
+          },
+          "percentile": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "在同一刺激詞所有使用者中的百分位；樣本不足時為 null",
+            "title": "Percentile"
+          }
+        },
+        "required": [
+          "raw"
+        ],
+        "title": "DimensionScore",
+        "type": "object"
+      },
+      "Fingerprint": {
+        "additionalProperties": false,
+        "description": "創造力指紋：五個維度，不合成單一總分。",
+        "properties": {
+          "distance": {
+            "$ref": "#/$defs/DimensionScore",
+            "description": "想得多遠：有效距離平均"
+          },
+          "breadth": {
+            "$ref": "#/$defs/DimensionScore",
+            "description": "想得多散：合理答案彼此的平均距離"
+          },
+          "rarity": {
+            "$ref": "#/$defs/DimensionScore",
+            "description": "多少人也想到：稀有度平均"
+          },
+          "appropriateness": {
+            "$ref": "#/$defs/DimensionScore",
+            "description": "合不合理：合理權重平均"
+          },
+          "fluency": {
+            "$ref": "#/$defs/DimensionScore",
+            "description": "想了多少：有效答案數"
+          }
+        },
+        "required": [
+          "distance",
+          "breadth",
+          "rarity",
+          "appropriateness",
+          "fluency"
+        ],
+        "title": "Fingerprint",
+        "type": "object"
+      },
+      "LlmInterpretation": {
+        "additionalProperties": false,
+        "description": "LLM 寫的解讀。只能引用 Fingerprint 裡的數字。",
+        "properties": {
+          "headline": {
+            "description": "一句話標題，例如「遠跳型探險家」",
+            "maxLength": 30,
+            "title": "Headline",
+            "type": "string"
+          },
+          "strengths": {
+            "items": {
+              "maxLength": 60,
+              "type": "string"
+            },
+            "maxItems": 3,
+            "minItems": 1,
+            "title": "Strengths",
+            "type": "array"
+          },
+          "suggestions": {
+            "items": {
+              "maxLength": 60,
+              "type": "string"
+            },
+            "maxItems": 3,
+            "minItems": 1,
+            "title": "Suggestions",
+            "type": "array"
+          },
+          "cited_numbers": {
+            "description": "解讀中引用到的所有數字，系統會逐一比對 Fingerprint，不符就重試",
+            "items": {
+              "type": "number"
+            },
+            "title": "Cited Numbers",
+            "type": "array"
+          }
+        },
+        "required": [
+          "headline",
+          "strengths",
+          "suggestions",
+          "cited_numbers"
+        ],
+        "title": "LlmInterpretation",
+        "type": "object"
+      },
+      "Point3D": {
+        "additionalProperties": false,
+        "properties": {
+          "x": {
+            "title": "X",
+            "type": "number"
+          },
+          "y": {
+            "title": "Y",
+            "type": "number"
+          },
+          "z": {
+            "title": "Z",
+            "type": "number"
+          }
+        },
+        "required": [
+          "x",
+          "y",
+          "z"
+        ],
+        "title": "Point3D",
+        "type": "object"
+      },
+      "PoolStats": {
+        "additionalProperties": false,
+        "properties": {
+          "stimulus_id": {
+            "title": "Stimulus Id",
+            "type": "string"
+          },
+          "human_users": {
+            "description": "已同意加入分布的使用者數",
+            "minimum": 0,
+            "title": "Human Users",
+            "type": "integer"
+          },
+          "seed_points": {
+            "description": "AI 種子點數量",
+            "minimum": 0,
+            "title": "Seed Points",
+            "type": "integer"
+          },
+          "enough_for_percentile": {
+            "description": "human_users ≥ 門檻（預設 20）才顯示百分位",
+            "title": "Enough For Percentile",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "stimulus_id",
+          "human_users",
+          "seed_points",
+          "enough_for_percentile"
+        ],
+        "title": "PoolStats",
+        "type": "object"
+      },
+      "RuleFlag": {
+        "enum": [
+          "ok",
+          "empty",
+          "no_cjk",
+          "gibberish",
+          "duplicate",
+          "same_as_stimulus",
+          "blocked_word",
+          "injection",
+          "too_long"
+        ],
+        "title": "RuleFlag",
+        "type": "string"
+      },
+      "ScoredAssociation": {
+        "additionalProperties": false,
+        "properties": {
+          "index": {
+            "title": "Index",
+            "type": "integer"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Note"
+          },
+          "rule_flag": {
+            "$ref": "#/$defs/RuleFlag"
+          },
+          "verdict": {
+            "$ref": "#/$defs/Verdict"
+          },
+          "weight": {
+            "description": "合理性權重：1.0 / 0.5 / 0",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Weight",
+            "type": "number"
+          },
+          "distance": {
+            "description": "語義距離 = 1 - cosine 相似度",
+            "maximum": 2.0,
+            "minimum": 0.0,
+            "title": "Distance",
+            "type": "number"
+          },
+          "effective_distance": {
+            "description": "distance × weight",
+            "maximum": 2.0,
+            "minimum": 0.0,
+            "title": "Effective Distance",
+            "type": "number"
+          },
+          "rarity": {
+            "anyOf": [
+              {
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "越接近 1 越少人想到；資料不足時為 null",
+            "title": "Rarity"
+          },
+          "outlier": {
+            "description": "距離是否為極端值（向量層標記）",
+            "title": "Outlier",
+            "type": "boolean"
+          },
+          "bridge": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Bridge",
+            "type": "array"
+          },
+          "reason": {
+            "default": "",
+            "title": "Reason",
+            "type": "string"
+          },
+          "position": {
+            "$ref": "#/$defs/Point3D",
+            "description": "3D 座標；半徑 = 真實語義距離，方向由投影決定"
+          }
+        },
+        "required": [
+          "index",
+          "text",
+          "rule_flag",
+          "verdict",
+          "weight",
+          "distance",
+          "effective_distance",
+          "outlier",
+          "position"
+        ],
+        "title": "ScoredAssociation",
+        "type": "object"
+      },
+      "Stimulus": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "description": "刺激詞代號，例如 s05",
+            "title": "Id",
+            "type": "string"
+          },
+          "word": {
+            "description": "中文刺激詞，例如 藝術",
+            "title": "Word",
+            "type": "string"
+          },
+          "abstraction_level": {
+            "description": "1=最抽象，10=最具象",
+            "maximum": 10,
+            "minimum": 1,
+            "title": "Abstraction Level",
+            "type": "integer"
+          },
+          "source_note": {
+            "description": "抽象程度的依據說明",
+            "title": "Source Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "word",
+          "abstraction_level",
+          "source_note"
+        ],
+        "title": "Stimulus",
+        "type": "object"
+      },
+      "Verdict": {
+        "enum": [
+          "reasonable",
+          "borderline",
+          "unreasonable"
+        ],
+        "title": "Verdict",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "submission_id": {
+        "title": "Submission Id",
+        "type": "string"
+      },
+      "stimulus": {
+        "$ref": "#/$defs/Stimulus"
+      },
+      "associations": {
+        "items": {
+          "$ref": "#/$defs/ScoredAssociation"
+        },
+        "title": "Associations",
+        "type": "array"
+      },
+      "fingerprint": {
+        "$ref": "#/$defs/Fingerprint"
+      },
+      "interpretation": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/LlmInterpretation"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "LLM 失敗 3 次時為 null，前端改顯示預設文字"
+      },
+      "pool": {
+        "$ref": "#/$defs/PoolStats"
+      },
+      "cloud": {
+        "description": "其他使用者與 AI 種子的點，用來畫背景星雲",
+        "items": {
+          "$ref": "#/$defs/CloudPoint"
+        },
+        "title": "Cloud",
+        "type": "array"
+      },
+      "warnings": {
+        "description": "例如：有 3 則被判定不合理",
+        "items": {
+          "type": "string"
+        },
+        "title": "Warnings",
+        "type": "array"
+      },
+      "created_at": {
+        "format": "date-time",
+        "title": "Created At",
+        "type": "string"
+      }
+    },
+    "required": [
+      "submission_id",
+      "stimulus",
+      "associations",
+      "fingerprint",
+      "interpretation",
+      "pool",
+      "cloud",
+      "created_at"
+    ],
+    "title": "AnalysisResponse",
+    "type": "object"
+  },
+  "ConsentRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "submission_id": {
+        "title": "Submission Id",
+        "type": "string"
+      },
+      "agree_to_share": {
+        "description": "必須由使用者在介面上明確勾選",
+        "title": "Agree To Share",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "submission_id",
+      "agree_to_share"
+    ],
+    "title": "ConsentRequest",
+    "type": "object"
+  },
+  "ConsentResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "submission_id": {
+        "title": "Submission Id",
+        "type": "string"
+      },
+      "shared": {
+        "title": "Shared",
+        "type": "boolean"
+      },
+      "message": {
+        "title": "Message",
+        "type": "string"
+      }
+    },
+    "required": [
+      "submission_id",
+      "shared",
+      "message"
+    ],
+    "title": "ConsentResponse",
+    "type": "object"
+  },
+  "ErrorResponse": {
+    "$defs": {
+      "ErrorCode": {
+        "enum": [
+          "invalid_input",
+          "blocked_input",
+          "unknown_stimulus",
+          "llm_unavailable",
+          "internal"
+        ],
+        "title": "ErrorCode",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "code": {
+        "$ref": "#/$defs/ErrorCode"
+      },
+      "message": {
+        "description": "給使用者看的繁體中文訊息",
+        "title": "Message",
+        "type": "string"
+      }
+    },
+    "required": [
+      "code",
+      "message"
+    ],
+    "title": "ErrorResponse",
+    "type": "object"
+  }
+}

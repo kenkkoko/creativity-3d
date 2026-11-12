@@ -1,0 +1,13 @@
+[project]
+name = "creativity3d"
+version = "0.1.0"
+description = "在 3D 空間中視覺化自己的創造力"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.14.3",
+]
+
+[build-system]
+requires = ["uv_build>=0.13.4,<0.14.0"]
+build-backend = "uv_build"
