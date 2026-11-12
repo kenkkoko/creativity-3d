@@ -817,7 +817,7 @@ async function showResult(data, { shared = false } = {}) {
 
   const assocs = data.associations || [];
   $("#myItems").innerHTML = assocs.map((a, i) => {
-    const cls = a.verdict === "unreasonable" ? " is-bad" : a.verdict === "borderline" ? " is-border" : "";
+    const cls = a.weight === 0 ? " is-bad" : (a.verdict === "borderline" || a.verdict === "unreasonable") ? " is-border" : "";
     return `<button type="button" class="chip${cls}" data-star="${i}">${esc(a.text)}<small>${Number(a.effective_distance).toFixed(2)}</small></button>`;
   }).join("");
 

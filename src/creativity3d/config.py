@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     llm_max_retries: int = 3
 
     # 產品參數
+    # 合理性門檻：False（預設）= AI 只負責畫聯想橋與標註，不影響計分，只有規則層（亂打、重複、指令）會擋；
+    #            True = AI 判為不合理的答案不計分、勉強的算一半（v0.3 行為）
+    appropriateness_gate: bool = False
     answer_seconds: int = 180
     percentile_min_users: int = 20
     rarity_min_users: int = 5

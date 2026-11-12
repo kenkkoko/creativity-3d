@@ -12,6 +12,11 @@ const COLOR_HUMAN = new THREE.Color("#ffffff");
 const COLOR_SEED = new THREE.Color("#f0a46a");
 const COLOR_ACCENT = new THREE.Color("#f0a46a");
 const VERDICT_TEXT = { reasonable: "合理", borderline: "勉強", unreasonable: "不合理" };
+const verdictLabel = (a) => {
+  if (a.rule_flag && a.rule_flag !== "ok") return "未通過基本檢查";
+  if (a.verdict === "unreasonable" && a.weight > 0) return "AI 看不出連結（仍計分）";
+  return VERDICT_TEXT[a.verdict] || a.verdict;
+};
 
 const easeOutExpo = (t) => (t >= 1 ? 1 : 1 - Math.pow(2, -10 * t));
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -202,14 +207,14 @@ export function createStarMap(container, data, opts = {}) {
   const stars = []; // {a, group, sprite, hit, label, target}
   const hitTargets = [];
   assocs.forEach((a, i) => {
-    const bad = a.verdict === "unreasonable" || a.weight === 0;
+    const bad = a.weight === 0;
     const eff = Math.max(0, Math.min(1.2, a.effective_distance || 0));
     const target = toVec(a.position || { x: 0, y: 0, z: 0 });
     const group = new THREE.Group();
     group.position.set(0, 0, 0);
     scene.add(group);
 
-    const color = bad ? COLOR_BAD : a.verdict === "borderline" ? COLOR_BORDER : COLOR_ME;
+    const color = bad ? COLOR_BAD : (a.verdict === "borderline" || a.verdict === "unreasonable") ? COLOR_BORDER : COLOR_ME;
     const mat = track(new THREE.SpriteMaterial({
       map: tex, color, transparent: true,
       opacity: bad ? 0.35 : 0.5 + eff * 0.3,
@@ -296,7 +301,7 @@ export function createStarMap(container, data, opts = {}) {
     pts.push(end);
     const curve = new THREE.CatmullRomCurve3(pts, false, "centripetal");
     const segs = 120;
-    const isBad = a.verdict === "unreasonable";
+    const isBad = a.weight === 0;
     const color = isBad ? COLOR_BAD : COLOR_ACCENT;
 
     const tube = new THREE.Mesh(
@@ -347,7 +352,7 @@ export function createStarMap(container, data, opts = {}) {
         <dt>語義距離</dt><dd>${fmt(a.distance)}</dd>
         <dt>有效距離</dt><dd>${fmt(a.effective_distance)}</dd>
         <dt>稀有度</dt><dd>${a.rarity === null || a.rarity === undefined ? "樣本不足" : fmt(a.rarity)}</dd>
-        <dt>合理性</dt><dd><span class="verdict ${esc(a.verdict)}">${VERDICT_TEXT[a.verdict] || esc(a.verdict)}</span></dd>
+        <dt>合理性</dt><dd><span class="verdict ${esc(a.verdict)}">${esc(verdictLabel(a))}</span></dd>
       </dl>
       ${bridge}
       ${a.reason ? `<div class="sc-reason">${esc(a.reason)}</div>` : ""}

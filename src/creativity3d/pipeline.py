@@ -130,7 +130,13 @@ def analyze(svc: Services, req: SubmitRequest) -> AnalysisResponse:
             partial_fallback = True
     if partial_fallback:
         warnings.append("部分答案的合理性判斷失敗，已改用保守規則。")
-    weights = [VERDICT_WEIGHT[v] for v in verdicts]
+    # fit：AI 判斷的合理程度（只用於「合不合理」這個維度與標註）
+    # weights：實際計分權重。預設不讓 AI 擋答案，只有規則層不通過才是 0
+    fit = [VERDICT_WEIGHT[v] for v in verdicts]
+    if s.appropriateness_gate:
+        weights = fit
+    else:
+        weights = [1.0 if f == RuleFlag.ok else 0.0 for f in flags]
     eff = [float(d) * w for d, w in zip(dists, weights)]
 
     # 4) 稀有度、投影
@@ -176,13 +182,24 @@ def analyze(svc: Services, req: SubmitRequest) -> AnalysisResponse:
         population=store.pool_raw_fingerprints(stim.id, exclude_session=req.client_session_id),
         min_users_for_percentile=s.percentile_min_users,
     )
+    if not s.appropriateness_gate:
+        fingerprint = _with_fit_dimension(fingerprint, fit, store.pool_raw_fingerprints(
+            stim.id, exclude_session=req.client_session_id), s.percentile_min_users)
     interpretation = llm_tasks.interpret(svc.llm, stim.word, fingerprint, max_retries=s.llm_max_retries)
     if interpretation is None:
         warnings.append(FALLBACK_INTERPRETATION_NOTE)
 
-    bad = sum(1 for w in weights if w == 0)
-    if bad:
-        warnings.append(f"有 {bad} 則答案沒有通過合理性檢查，不列入計分。")
+    blocked = sum(1 for f in flags if f != RuleFlag.ok)
+    if s.appropriateness_gate:
+        bad = sum(1 for w in weights if w == 0)
+        if bad:
+            warnings.append(f"有 {bad} 則答案沒有通過合理性檢查，不列入計分。")
+    else:
+        if blocked:
+            warnings.append(f"有 {blocked} 則答案沒有通過基本檢查（亂打、重複或指令性文字），不列入計分。")
+        unlinked = sum(1 for f, v in zip(flags, verdicts) if f == RuleFlag.ok and v == Verdict.unreasonable)
+        if unlinked:
+            warnings.append(f"AI 看不出 {unlinked} 則答案的連結，但仍照常計分；可以在「我怎麼想到的」補充說明。")
 
     response = AnalysisResponse(
         submission_id="pending",
@@ -312,3 +329,16 @@ def refresh_positions(svc: Services, response: AnalysisResponse) -> AnalysisResp
     except Exception:  # noqa: BLE001
         log.exception("重算舊紀錄位置失敗：%s", response.submission_id)
         return response
+
+
+def _with_fit_dimension(fp, fit: list[float], population: list[dict], min_users: int):
+    """不使用合理性門檻時，「合不合理」改用 AI 判斷的合理程度（reasonable 1、borderline 0.5、看不出連結 0）的平均，
+    其他維度不變。"""
+    from .schemas import DimensionScore
+
+    raw = sum(fit) / len(fit) if fit else None
+    pct = None
+    pop = [p.get("appropriateness") for p in population if p.get("appropriateness") is not None]
+    if raw is not None and len(population) >= min_users and pop:
+        pct = scoring.percentile(raw, pop)
+    return fp.model_copy(update={"appropriateness": DimensionScore(raw=raw, percentile=pct)})
