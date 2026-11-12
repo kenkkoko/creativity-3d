@@ -91,3 +91,7 @@ uv run pytest
 
 - 建立黃金樣本 eval，量化合理性判斷的準確率
 - 部署成公開網址（改用雲端 API）
+
+## 授權
+
+[MIT](LICENSE) © 2026 Kai Lin（林新凱）
