@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#08080a" />
+<title>創造力 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+<style>
+  /* 設計 token 沿用 me.hellokai07.com */
+  :root {
+    --bg: #08080a; --ink: #f5f5f6; --text: #c3c3c8; --muted: #8f8f97; --faint: #5a5a62;
+    --glass: rgba(255,255,255,.045); --glass-2: rgba(255,255,255,.07);
+    --line: rgba(255,255,255,.09); --line-soft: rgba(255,255,255,.05);
+    --accent: #f0a46a;
+    --sans: "Geist","Noto Sans TC",system-ui,-apple-system,sans-serif;
+    --mono: "Geist Mono",ui-monospace,monospace;
+    --ease: cubic-bezier(.16,1,.3,1);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--bg); color: var(--text);
+    font-family: var(--sans); -webkit-font-smoothing: antialiased;
+    background-image: radial-gradient(60% 50% at 70% 10%, rgba(240,164,106,.08), transparent 70%);
+  }
+  main { max-width: 880px; margin: 0 auto; padding: 96px 24px; }
+  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .18em; color: var(--accent); text-transform: uppercase; }
+  h1 { color: var(--ink); font-size: clamp(36px, 6vw, 56px); font-weight: 800; letter-spacing: -.02em; margin: 12px 0 16px; }
+  p.lead { font-size: 17px; line-height: 1.75; max-width: 600px; }
+  .card { margin-top: 40px; padding: 28px; border-radius: 20px; background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(12px); }
+  .card h2 { color: var(--ink); font-size: 18px; margin: 0 0 16px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; }
+  .chip { padding: 8px 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--glass-2); color: var(--ink); font-size: 15px; transition: border-color .3s var(--ease); }
+  .chip:hover { border-color: rgba(255,255,255,.3); }
+  .chip small { font-family: var(--mono); color: var(--faint); margin-left: 6px; }
+  .status { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; background: var(--faint); }
+  .dot.ok { background: #4ade80; } .dot.bad { background: #f87171; }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">Creativity 3D · 階段 3 骨架</div>
+  <h1>看見你的創造力</h1>
+  <p class="lead">選一個詞，用三分鐘寫下所有聯想。送出後，你的每個想法會變成星空中的一顆星：離中心越遠，想得越遠。</p>
+
+  <section class="card">
+    <h2>系統狀態</h2>
+    <div class="status" id="health"><span class="dot"></span>檢查中…</div>
+  </section>
+
+  <section class="card">
+    <h2>預設刺激詞</h2>
+    <div class="chips" id="stimuli"></div>
+  </section>
+</main>
+<script>
+  fetch("/api/health").then(r => r.json()).then(h => {
+    const el = document.getElementById("health");
+    const cls = h.ok ? "ok" : "bad";
+    const msg = h.ok
+      ? `已連線 · ${h.provider} · ${h.llm_model} · ${h.embed_model}`
+      : (h.missing_models?.length ? `缺少模型：${h.missing_models.join(", ")}` : (h.detail?.error || "模型無法使用"));
+    el.innerHTML = `<span class="dot ${cls}"></span>${msg}`;
+  });
+  fetch("/api/stimuli").then(r => r.json()).then(list => {
+    document.getElementById("stimuli").innerHTML = list
+      .map(s => `<span class="chip">${s.word}<small>L${s.abstraction_level ?? "–"}</small></span>`)
+      .join("");
+  });
+</script>
+</body>
+</html>

@@ -5,8 +5,16 @@ description = "在 3D 空間中視覺化自己的創造力"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "fastapi>=0.162.5",
+    "httpx>=0.28.1",
+    "numpy>=2.5.4",
     "pydantic>=2.14.3",
+    "pydantic-settings>=2.16.2",
+    "uvicorn[standard]>=0.54.0",
 ]
+
+[project.scripts]
+creativity3d = "creativity3d:main"
 
 [build-system]
 requires = ["uv_build>=0.13.4,<0.14.0"]

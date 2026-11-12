@@ -1,0 +1,12 @@
+[
+  {"id": "s01", "word": "時間", "abstraction_level": 1, "source_note": "替代論文的 As（像），抽象程度待查證"},
+  {"id": "s02", "word": "無限", "abstraction_level": 2, "source_note": "MRC Infinity 具象度 204"},
+  {"id": "s03", "word": "希望", "abstraction_level": 3, "source_note": "MRC Hope 具象度 261"},
+  {"id": "s04", "word": "幫忙", "abstraction_level": 4, "source_note": "MRC Help 具象度 320"},
+  {"id": "s05", "word": "驚嚇", "abstraction_level": 5, "source_note": "MRC Scare 具象度 380"},
+  {"id": "s06", "word": "藝術", "abstraction_level": 6, "source_note": "MRC Art 具象度 440"},
+  {"id": "s07", "word": "紅色", "abstraction_level": 7, "source_note": "MRC Red 具象度 501"},
+  {"id": "s08", "word": "國王", "abstraction_level": 8, "source_note": "MRC King 具象度 559"},
+  {"id": "s09", "word": "蘋果", "abstraction_level": 9, "source_note": "MRC Apple 具象度 620"},
+  {"id": "s10", "word": "牛奶", "abstraction_level": 10, "source_note": "MRC Milk 具象度 670"}
+]
