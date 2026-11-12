@@ -284,6 +284,14 @@ class Store:
                 ],
             )
 
+    def seed_vectors(self, stimulus_id: str) -> np.ndarray | None:
+        """回傳該刺激詞所有 AI 種子的向量；沒有種子回傳 None。"""
+        with self._conn() as con:
+            rows = con.execute("SELECT vec FROM seeds WHERE stimulus_id = ? ORDER BY id", (stimulus_id,)).fetchall()
+        if not rows:
+            return None
+        return np.vstack([np.frombuffer(r["vec"], dtype=np.float32) for r in rows])
+
     def save_projector(self, stimulus_id: str, data: dict) -> None:
         with self._conn() as con:
             con.execute(

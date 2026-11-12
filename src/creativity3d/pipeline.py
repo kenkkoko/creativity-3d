@@ -105,6 +105,7 @@ def analyze(svc: Services, req: SubmitRequest) -> AnalysisResponse:
         if judgements is None:
             warnings.append("合理性判斷暫時無法使用，已改用保守規則：距離極端的答案先算一半。")
 
+    partial_fallback = False
     verdicts: list[Verdict] = []
     bridges: list[list[str]] = []
     reasons: list[str] = []
@@ -117,11 +118,18 @@ def analyze(svc: Services, req: SubmitRequest) -> AnalysisResponse:
             verdicts.append(Verdict.borderline if outliers[i] else Verdict.reasonable)
             bridges.append([])
             reasons.append("保守判斷（模型暫時無法使用）")
-        else:
-            j = judgements.get(i)
-            verdicts.append(j.verdict if j else Verdict.borderline)
-            bridges.append(list(j.bridge) if j else [])
-            reasons.append(j.reason if j else "")
+        elif i in judgements:
+            j = judgements[i]
+            verdicts.append(j.verdict)
+            bridges.append(list(j.bridge))
+            reasons.append(j.reason)
+        else:  # 這一批判斷失敗 → 保守規則
+            verdicts.append(Verdict.borderline if outliers[i] else Verdict.reasonable)
+            bridges.append([])
+            reasons.append("保守判斷（這一批模型判斷失敗）")
+            partial_fallback = True
+    if partial_fallback:
+        warnings.append("部分答案的合理性判斷失敗，已改用保守規則。")
     weights = [VERDICT_WEIGHT[v] for v in verdicts]
     eff = [float(d) * w for d, w in zip(dists, weights)]
 
@@ -135,8 +143,7 @@ def analyze(svc: Services, req: SubmitRequest) -> AnalysisResponse:
     for k, i in enumerate(valid):
         rarity[i] = rar_valid[k]
 
-    proj_data = store.load_projector(stim.id)
-    projector = Projector.from_dict(proj_data) if proj_data else Projector.fit(stim_vec, vecs)
+    projector = ensure_projector(svc, stim, stim_vec) or Projector.fit(stim_vec, vecs)
 
     # 聯想橋中間概念：一次 embedding，算真實座標
     terms = sorted({t for b in bridges for t in b})
@@ -217,10 +224,33 @@ def seed_stimulus(svc: Services, stim: Stimulus) -> None:
         svc.store.mark_ready(stim.id)
 
 
+def ensure_projector(svc: Services, stim: Stimulus, stim_vec: np.ndarray | None = None) -> Projector | None:
+    """取得最新版投影；舊版（v1，未置中）就用種子向量重新擬合並存回。沒有種子時回傳 None。"""
+    data = svc.store.load_projector(stim.id)
+    if Projector.is_current(data):
+        return Projector.from_dict(data)
+    seeds = svc.store.seed_vectors(stim.id)
+    if seeds is None:
+        return None
+    if stim_vec is None:
+        stim_vec = svc.embedder.embed([stim.word])[0]
+    proj = Projector.fit(stim_vec, seeds)
+    svc.store.save_projector(stim.id, proj.to_dict())
+    log.info("投影已更新為 v%d：%s", Projector.VERSION, stim.word)
+    return proj
+
+
 def seed_missing_presets(svc: Services) -> None:
     for stim in svc.store.list_stimuli(None):
-        if stim.source.value == "preset" and svc.store.load_projector(stim.id) is None:
+        if stim.source.value != "preset":
+            continue
+        if svc.store.seed_vectors(stim.id) is None:
             seed_stimulus(svc, stim)
+        else:
+            try:
+                ensure_projector(svc, stim)
+            except ProviderError:
+                log.warning("無法更新投影：%s", stim.word)
 
 
 def create_stimulus(svc: Services, word: str, session_id: str) -> tuple[Stimulus, bool]:

@@ -55,8 +55,21 @@ def test_rank_deficient_references_completed(data):
 def test_zero_residual_gets_fixed_direction(data):
     stim, refs = data
     proj = Projector.fit(stim, refs)
-    p = proj.project(stim, 0.5)
+    p = proj.project(stim + proj.center, 0.5)  # 殘差（減去中心後）為零
     assert (p.x, p.y, p.z) == pytest.approx((0.0, 0.0, 0.5))
+
+
+def test_centered_directions_spread(data):
+    """v2 置中後，參考答案的方向應分散在各側，而不是全部擠在同一邊。"""
+    stim, refs = data
+    proj = Projector.fit(stim, refs)
+    xs = [proj.project(r, 1.0).x for r in refs]
+    assert min(xs) < 0 < max(xs)
+
+
+def test_old_version_not_current():
+    assert not Projector.is_current({"version": 1})
+    assert Projector.is_current(Projector.fit(np.ones(8) / 8**0.5, np.zeros((0, 8))).to_dict())
 
 
 def test_direction_follows_pca(data):

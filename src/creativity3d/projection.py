@@ -42,9 +42,15 @@ class Projector:
     stim_vec：刺激詞的向量（原點）。components：shape (3, dim) 的正交單位基底。
     """
 
-    def __init__(self, stim_vec: np.ndarray, components: np.ndarray):
+    VERSION = 2
+
+    def __init__(self, stim_vec: np.ndarray, components: np.ndarray, center: np.ndarray | None = None):
         self.stim_vec = np.asarray(stim_vec, dtype=np.float64).ravel()
         self.components = np.asarray(components, dtype=np.float64)
+        # center：參考答案殘差的平均。先減掉它再投影，方向才會在 3D 中散開，
+        # 不會全部被「離開刺激詞的共同方向」主導而擠在同一側。
+        self.center = (np.zeros_like(self.stim_vec) if center is None
+                       else np.asarray(center, dtype=np.float64).ravel())
         if self.components.shape != (3, self.stim_vec.size):
             raise ValueError(
                 f"components 形狀應為 (3, {self.stim_vec.size})，實際為 {self.components.shape}"
@@ -54,7 +60,8 @@ class Projector:
     def fit(cls, stim_vec: np.ndarray, reference_vecs: np.ndarray) -> "Projector":
         """以參考答案（AI 種子 + 已分享的公共答案）擬合 3 個主成分。
 
-        對 (reference_vecs − stim_vec) 做 SVD（不先置中，因為我們關心的是「離開刺激詞的方向」），
+        對 (reference_vecs − stim_vec) 先置中（減去平均）再做 SVD。
+        v1 沒有置中，結果所有點都擠在同一側（第一主成分 ≈ 共同的平均方向），v2 修正。
         取前 3 個右奇異向量。參考答案少於 3 筆，或有效秩不足 3 時，不足的軸用
         np.random.default_rng(42) 產生的正交向量補齊，所以結果可重現。
         每個主成分的正負號固定成「絕對值最大的分量為正」，避免 SVD 正負號任意造成星圖翻面。
@@ -72,8 +79,11 @@ class Projector:
         ref = ref.reshape(-1, dim)
 
         comps = np.zeros((0, dim))
+        center = np.zeros(dim)
         if ref.shape[0] >= 3:
             diffs = ref - stim
+            center = diffs.mean(axis=0)
+            diffs = diffs - center
             _, s, vt = np.linalg.svd(diffs, full_matrices=False)
             keep = s[:3] > _EPS * max(1.0, float(s[0]) if s.size else 1.0)
             comps = vt[:3][keep]
@@ -86,7 +96,7 @@ class Projector:
             j = int(np.argmax(np.abs(comps[i])))
             if comps[i, j] < 0:
                 comps[i] = -comps[i]
-        return cls(stim, comps)
+        return cls(stim, comps, center)
 
     def project(self, vec: np.ndarray, distance: float) -> Point3D:
         """回傳 3D 座標：方向 = 主成分投影後正規化，與原點的距離 = distance。
@@ -96,7 +106,7 @@ class Projector:
         例子：「蘋果 → 牛頓」distance = 0.6，回傳的點 (x, y, z) 滿足
         sqrt(x² + y² + z²) = 0.6。
         """
-        diff = np.asarray(vec, dtype=np.float64).ravel() - self.stim_vec
+        diff = np.asarray(vec, dtype=np.float64).ravel() - self.stim_vec - self.center
         p = self.components @ diff
         n = float(np.linalg.norm(p))
         direction = p / n if n > _EPS else FALLBACK_DIRECTION
@@ -107,12 +117,18 @@ class Projector:
     def to_dict(self) -> dict:
         """轉成可存成 JSON 的 dict（存進 SQLite）。"""
         return {
-            "version": 1,
+            "version": self.VERSION,
             "stim_vec": self.stim_vec.tolist(),
             "components": self.components.tolist(),
+            "center": self.center.tolist(),
         }
 
     @classmethod
     def from_dict(cls, d: dict) -> "Projector":
         """從 to_dict() 的結果還原。"""
-        return cls(np.asarray(d["stim_vec"]), np.asarray(d["components"]))
+        return cls(np.asarray(d["stim_vec"]), np.asarray(d["components"]),
+                   np.asarray(d["center"]) if "center" in d else None)
+
+    @staticmethod
+    def is_current(d: dict | None) -> bool:
+        return bool(d) and d.get("version") == Projector.VERSION

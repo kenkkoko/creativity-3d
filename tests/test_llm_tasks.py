@@ -83,28 +83,23 @@ def test_judge_duplicate_index_retries():
     assert out is not None and len(llm.calls) == 2
 
 
-def test_judge_unreasonable_with_bridge_retries():
-    llm = FakeLLM(scripted=[batch(j(0, "unreasonable", ["引擎"])), batch(j(0, "unreasonable"))])
+def test_judge_unreasonable_bridge_is_cleared_without_retry():
+    llm = FakeLLM(scripted=[batch(j(0, "unreasonable", ["引擎"]))])
     out = llm_tasks.judge_associations(llm, "蘋果", [item(0, "化油器")])
     assert out is not None and out[0].bridge == []
-    assert len(llm.calls) == 2
+    assert len(llm.calls) == 1  # 自動修正，不浪費重試
 
 
-def test_judge_bridge_equal_to_stimulus_or_answer_retries():
-    llm = FakeLLM(
-        scripted=[
-            batch(j(0, "reasonable", ["蘋果", "掉落"])),
-            batch(j(0, "reasonable", ["掉落", "牛頓"])),
-            batch(j(0, "reasonable", ["掉落", "萬有引力"])),
-        ]
-    )
+def test_judge_bridge_repaired_strips_stimulus_and_answer():
+    # 真實案例：qwen 常把聯想本身放在最後一步
+    llm = FakeLLM(scripted=[batch(j(0, "reasonable", ["蘋果", "萬有引力", "牛頓"]))])
     out = llm_tasks.judge_associations(llm, "蘋果", [item(0, "牛頓")])
-    assert out is not None and out[0].bridge == ["掉落", "萬有引力"]
-    assert len(llm.calls) == 3
+    assert out is not None and out[0].bridge == ["萬有引力"]
+    assert len(llm.calls) == 1
 
 
-def test_judge_all_fail_returns_none():
-    llm = FakeLLM(scripted=["不是 JSON", batch(j(9)), batch(j(0, "unreasonable", ["x"]))])
+def test_judge_index_mismatch_retries_then_all_fail_returns_none():
+    llm = FakeLLM(scripted=["不是 JSON", batch(j(9)), batch(j(7))])
     assert llm_tasks.judge_associations(llm, "蘋果", [item(0, "紅色")]) is None
     assert len(llm.calls) == 3
 
@@ -114,16 +109,33 @@ def test_judge_batches():
     llm = FakeLLM(
         scripted=[batch(*[j(i) for i in range(15)]), batch(*[j(i) for i in range(15, 20)])]
     )
-    out = llm_tasks.judge_associations(llm, "蘋果", items, batch_size=15)
+    out = llm_tasks.judge_associations(llm, "蘋果", items, batch_size=15, parallel=1)
     assert out is not None and set(out) == set(range(20))
     assert len(llm.calls) == 2
 
 
-def test_judge_one_batch_fails_whole_returns_none():
+def test_judge_one_batch_fails_returns_partial():
     items = [item(i, f"詞{i}") for i in range(20)]
     llm = FakeLLM(scripted=[batch(*[j(i) for i in range(15)]), "壞", "壞", "壞"])
-    assert llm_tasks.judge_associations(llm, "蘋果", items, batch_size=15) is None
+    out = llm_tasks.judge_associations(llm, "蘋果", items, batch_size=15, parallel=1)
+    assert out is not None and set(out) == set(range(15))  # 失敗那批由統整者走保守規則
     assert len(llm.calls) == 4
+
+
+def test_judge_parallel_batches_default():
+    items = [item(i, f"詞{i}") for i in range(40)]
+
+    class EchoLLM(FakeLLM):
+        def chat_json(self, system, user, json_schema):
+            import re
+            self.calls.append({"user": user})
+            idx = [int(x) for x in re.findall(r"\d+", user.split("index 依序為")[-1])]
+            return batch(*[j(i) for i in idx])
+
+    llm = EchoLLM()
+    out = llm_tasks.judge_associations(llm, "蘋果", items, batch_size=15)
+    assert out is not None and set(out) == set(range(40))
+    assert len(llm.calls) == 3
 
 
 def test_judge_empty_items():

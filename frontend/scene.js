@@ -125,10 +125,10 @@ export function createStarMap(container, data, opts = {}) {
   const core = new THREE.Mesh(track(new THREE.SphereGeometry(0.32, 32, 32)), track(new THREE.MeshBasicMaterial({ color: 0xfff3e6 })));
   center.add(core);
   const halo = new THREE.Sprite(track(new THREE.SpriteMaterial({ map: tex, color: COLOR_ACCENT, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false })));
-  halo.scale.setScalar(3.4);
+  halo.scale.setScalar(2.2);
   center.add(halo);
   const halo2 = new THREE.Sprite(track(new THREE.SpriteMaterial({ map: tex, color: COLOR_ACCENT, transparent: true, opacity: 0.25, blending: THREE.AdditiveBlending, depthWrite: false })));
-  halo2.scale.setScalar(9);
+  halo2.scale.setScalar(5);
   center.add(halo2);
   {
     center.add(makeLabel("center-label", data.stimulus?.word ?? "").obj);
@@ -212,21 +212,22 @@ export function createStarMap(container, data, opts = {}) {
     const color = bad ? COLOR_BAD : a.verdict === "borderline" ? COLOR_BORDER : COLOR_ME;
     const mat = track(new THREE.SpriteMaterial({
       map: tex, color, transparent: true,
-      opacity: bad ? 0.45 : 0.75 + eff * 0.25,
+      opacity: bad ? 0.35 : 0.5 + eff * 0.3,
       blending: bad ? THREE.NormalBlending : THREE.AdditiveBlending,
       depthWrite: false,
     }));
     const sprite = new THREE.Sprite(mat);
-    const baseScale = bad ? 0.35 : 0.75 + eff * 1.1;
+    // 一個想法 = 一顆小星：光暈約為核心的 4–6 倍，避免 40 顆重疊成一團白光
+    const baseScale = bad ? 0.16 : 0.24 + eff * 0.36;
     sprite.scale.setScalar(baseScale);
     group.add(sprite);
 
     if (!bad) {
-      const dot = new THREE.Mesh(track(new THREE.SphereGeometry(0.05 + eff * 0.05, 12, 12)), track(new THREE.MeshBasicMaterial({ color: 0xffffff })));
+      const dot = new THREE.Mesh(track(new THREE.SphereGeometry(0.035 + eff * 0.025, 12, 12)), track(new THREE.MeshBasicMaterial({ color: 0xffffff })));
       group.add(dot);
     }
 
-    const hit = new THREE.Mesh(track(new THREE.SphereGeometry(0.42, 8, 8)), track(new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, colorWrite: false })));
+    const hit = new THREE.Mesh(track(new THREE.SphereGeometry(0.3, 8, 8)), track(new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, colorWrite: false })));
     hit.userData.index = i;
     group.add(hit);
     hitTargets.push(hit);
@@ -466,7 +467,7 @@ export function createStarMap(container, data, opts = {}) {
     cloudUniforms.uGrow.value = reduceMotion ? 1 : easeOutExpo(Math.min(1, t / 2.2));
 
     const pulse = 1 + Math.sin(t * 2) * 0.06;
-    halo.scale.setScalar(3.4 * pulse);
+    halo.scale.setScalar(2.2 * pulse);
 
     for (const s of stars) {
       const k = reduceMotion ? 1 : easeOutExpo(Math.max(0, Math.min(1, (t - s.delay) / 1.6)));

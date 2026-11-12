@@ -6,6 +6,8 @@
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
+
 import re
 from dataclasses import dataclass
 
@@ -46,9 +48,8 @@ def _norm(s: str) -> str:
 
 
 def _judge_check(stimulus: str, batch: list[JudgeItem]):
+    """只檢查結構性錯誤（index 對不上）。bridge 的小毛病交給 _repair_bridges 自動修正，不浪費重試。"""
     expected = [it.index for it in batch]
-    text_by_index = {it.index: it.text for it in batch}
-    stim = _norm(stimulus)
 
     def check(result: LlmJudgementBatch) -> str | None:
         got = [j.index for j in result.judgements]
@@ -60,21 +61,43 @@ def _judge_check(stimulus: str, batch: list[JudgeItem]):
                 f"index 必須剛好是 {expected}，每個一筆。"
                 f"缺少 {missing}，多出 {extra}，重複 {dup}。"
             )
-        for j in result.judgements:
-            if j.verdict == Verdict.unreasonable and j.bridge:
-                return f"index {j.index} 判為 unreasonable，bridge 必須是空陣列 []。"
-            answer = _norm(text_by_index[j.index])
-            for step in j.bridge:
-                s = _norm(step)
-                if not s:
-                    return f"index {j.index} 的 bridge 有空字串。"
-                if s == stim:
-                    return f"index {j.index} 的 bridge 不可包含刺激詞本身「{stimulus}」。"
-                if s == answer:
-                    return f"index {j.index} 的 bridge 不可包含聯想本身「{text_by_index[j.index]}」。"
         return None
 
     return check
+
+
+def _repair_bridges(stimulus: str, batch: list[JudgeItem], result: LlmJudgementBatch) -> list[LlmJudgement]:
+    """自動修正 bridge：去掉空字串、刺激詞本身、聯想本身；unreasonable 一律清空。
+
+    例：模型常把聯想本身放在最後一步（國王 → 王宮 → 侍衛 → 弓箭手），
+    這裡直接拿掉「弓箭手」，保留 [王宮, 侍衛]，不必整批重試。
+    """
+    stim = _norm(stimulus)
+    text_by_index = {it.index: _norm(it.text) for it in batch}
+    fixed = []
+    for j in result.judgements:
+        if j.verdict == Verdict.unreasonable:
+            steps: list[str] = []
+        else:
+            ans = text_by_index[j.index]
+            steps = [b.strip() for b in j.bridge if _norm(b) and _norm(b) not in (stim, ans)]
+        fixed.append(j.model_copy(update={"bridge": steps}))
+    return fixed
+
+
+def _judge_batch(llm: LLMProvider, stimulus: str, batch: list[JudgeItem], max_retries: int):
+    answers = [{"index": it.index, "text": it.text, "note": it.note} for it in batch]
+    outliers = [it.index for it in batch if it.outlier]
+    result = call_structured(
+        llm,
+        LlmJudgementBatch,
+        prompts.JUDGE_SYSTEM,
+        prompts.judge_user(stimulus, answers, outliers),
+        task="judge",
+        max_retries=max_retries,
+        extra_check=_judge_check(stimulus, batch),
+    )
+    return None if result is None else _repair_bridges(stimulus, batch, result)
 
 
 def judge_associations(
@@ -83,28 +106,24 @@ def judge_associations(
     items: list[JudgeItem],
     max_retries: int = 3,
     batch_size: int = 15,
+    parallel: int = 3,
 ) -> dict[int, LlmJudgement] | None:
-    """分批判斷；任何一批重試用盡仍失敗 → 回傳 None（統整者改用保守結果）。"""
+    """分批（可平行）判斷。
+
+    - 某一批重試用盡仍失敗：該批的 index 不出現在結果中，由統整者對這些答案用保守規則
+    - 全部批次都失敗：回傳 None
+    """
     if not items:
         return {}
     batch_size = max(1, batch_size)
+    batches = [items[i : i + batch_size] for i in range(0, len(items), batch_size)]
+    with ThreadPoolExecutor(max_workers=max(1, min(parallel, len(batches)))) as pool:
+        results = list(pool.map(lambda b: _judge_batch(llm, stimulus, b, max_retries), batches))
+    if all(r is None for r in results):
+        return None
     out: dict[int, LlmJudgement] = {}
-    for start in range(0, len(items), batch_size):
-        batch = items[start : start + batch_size]
-        answers = [{"index": it.index, "text": it.text, "note": it.note} for it in batch]
-        outliers = [it.index for it in batch if it.outlier]
-        result = call_structured(
-            llm,
-            LlmJudgementBatch,
-            prompts.JUDGE_SYSTEM,
-            prompts.judge_user(stimulus, answers, outliers),
-            task="judge",
-            max_retries=max_retries,
-            extra_check=_judge_check(stimulus, batch),
-        )
-        if result is None:
-            return None
-        for j in result.judgements:
+    for r in results:
+        for j in r or []:
             out[j.index] = j
     return out
 

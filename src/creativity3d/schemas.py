@@ -147,8 +147,8 @@ class LlmJudgement(Strict):
         max_length=3,
         description="從刺激詞走到聯想的中間概念，0～3 個；verdict=unreasonable 時必須為空",
     )
-    reason: Annotated[str, StringConstraints(max_length=60)] = Field(
-        description="一句話理由，繁體中文"
+    reason: Annotated[str, StringConstraints(max_length=30)] = Field(
+        description="一句話理由，繁體中文，30 字以內"
     )
 
 
@@ -211,10 +211,10 @@ class LlmInterpretation(Strict):
     headline: Annotated[str, StringConstraints(max_length=30)] = Field(
         description="一句話標題，例如「遠跳型探險家」"
     )
-    strengths: list[Annotated[str, StringConstraints(max_length=60)]] = Field(
+    strengths: list[Annotated[str, StringConstraints(strip_whitespace=True, min_length=4, max_length=60)]] = Field(
         min_length=1, max_length=3
     )
-    suggestions: list[Annotated[str, StringConstraints(max_length=60)]] = Field(
+    suggestions: list[Annotated[str, StringConstraints(strip_whitespace=True, min_length=4, max_length=60)]] = Field(
         min_length=1, max_length=3
     )
     cited_numbers: list[float] = Field(
