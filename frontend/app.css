@@ -147,6 +147,20 @@ body:not([data-view="home"]) .who { display: none; }
 .history { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
 .history > .muted { grid-column: 1 / -1; }
 .spinner.inline { display: inline-block; vertical-align: -1px; margin-right: 8px; }
+.hist-item { position: relative; display: flex; }
+.hist-item > .hist-card { flex: 1; }
+.hist-del {
+  position: absolute; top: 10px; right: 10px; z-index: 2; width: 26px; height: 26px; border-radius: 50%;
+  border: 1px solid var(--line); background: rgba(8,8,10,.6); color: var(--muted); font-size: 12px; line-height: 1;
+  cursor: pointer; opacity: 0; transition: opacity .2s var(--ease), color .2s var(--ease), border-color .2s var(--ease);
+}
+.hist-item:hover .hist-del, .hist-del:focus-visible { opacity: 1; }
+.hist-del:hover { color: #f87171; border-color: rgba(248,113,113,.5); }
+@media (hover: none) { .hist-del { opacity: .8; } }
+.hist-item .badge-shared { margin-right: 30px; }
+.btn-danger { background: rgba(248,113,113,.14); color: #fca5a5; border: 1px solid rgba(248,113,113,.4); }
+.btn-danger:hover { background: rgba(248,113,113,.24); color: #fecaca; }
+.btn-danger:disabled { opacity: .5; cursor: progress; }
 .hist-card {
   position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left;
   padding: 16px 18px; border-radius: 16px; border: 1px solid var(--line); background: var(--glass-2);

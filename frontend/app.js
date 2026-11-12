@@ -180,6 +180,7 @@ const api = MOCK ? {
   player: () => http("/api/player", { query: { client_session_id: SESSION } }),
   history: () => http("/api/history", { query: { client_session_id: SESSION } }),
   submission: (id) => http(`/api/submissions/${encodeURIComponent(id)}`, { query: { client_session_id: SESSION } }),
+  deleteSubmission: (id) => http(`/api/submissions/${encodeURIComponent(id)}`, { method: "DELETE", query: { client_session_id: SESSION } }),
 };
 
 // ---------------------------------------------------------------------------
@@ -510,6 +511,8 @@ function renderHistory() {
     const dist = typeof h.distance === "number" ? h.distance.toFixed(2) : "—";
     const n = typeof h.fluency === "number" ? Math.round(h.fluency) : "—";
     return `
+    <div class="hist-item">
+    <button type="button" class="hist-del" data-del="${esc(h.submission_id)}" aria-label="刪除這筆紀錄" title="刪除這筆紀錄">✕</button>
     <button type="button" class="hist-card" data-sub="${esc(h.submission_id)}">
       <span class="hist-top">
         <span class="hist-word">${esc(h.stimulus_word)}</span>
@@ -518,8 +521,40 @@ function renderHistory() {
       <span class="hist-date">${esc(fmtDate(h.created_at))}</span>
       <span class="hist-meta">想了 ${n} 則<i>·</i>距離 ${dist}</span>
       ${h.headline ? `<span class="hist-headline">${esc(h.headline)}</span>` : ""}
-    </button>`;
+    </button>
+    </div>`;
   }).join("");
+}
+
+// ---- 刪除紀錄（需要確認，刪了無法復原） ----
+let deletingId = null;
+function openDelete(id) {
+  const h = (state.history || []).find((x) => x.submission_id === id);
+  if (!h) return;
+  deletingId = id;
+  $("#deleteWord").textContent = h.stimulus_word;
+  $("#deleteWhen").textContent = fmtDate(h.created_at);
+  $("#deleteShared").hidden = !h.shared;
+  $("#deleteMsg").textContent = "";
+  $("#deleteModal").hidden = false;
+  $("#deleteCancel").focus();
+}
+function closeDelete() { $("#deleteModal").hidden = true; deletingId = null; }
+async function confirmDelete() {
+  if (!deletingId) return;
+  const btn = $("#deleteConfirm");
+  btn.disabled = true;
+  try {
+    if (MOCK) { state.history = state.history.filter((x) => x.submission_id !== deletingId); }
+    else { await api.deleteSubmission(deletingId); state.history = state.history.filter((x) => x.submission_id !== deletingId); }
+    closeDelete();
+    renderHistory();
+    toast("已刪除這筆紀錄。");
+  } catch (e) {
+    $("#deleteMsg").textContent = e.message || "刪除失敗，請稍後再試。";
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 let openingSub = null;
@@ -929,6 +964,8 @@ function bind() {
     }
     const pub = ev.target.closest("[data-publish]");
     if (pub) { openPublish(pub.dataset.publish); return; }
+    const del = ev.target.closest("[data-del]");
+    if (del) { openDelete(del.dataset.del); return; }
     const sub = ev.target.closest("[data-sub]");
     if (sub) { openSubmission(sub.dataset.sub, sub); return; }
     const star = ev.target.closest("[data-star]");
@@ -975,6 +1012,10 @@ function bind() {
   $("#consentBtn").addEventListener("click", onConsent);
   $("#againBtn").addEventListener("click", goHome);
   $("#reanalyzeBtn").addEventListener("click", reanalyze);
+  $("#deleteCancel").addEventListener("click", closeDelete);
+  $("#deleteConfirm").addEventListener("click", confirmDelete);
+  $("#deleteModal").addEventListener("click", (ev) => { if (ev.target.id === "deleteModal") closeDelete(); });
+  document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && !$("#deleteModal").hidden) closeDelete(); });
 
   $("#publishCheck").addEventListener("change", (ev) => { $("#publishOk").disabled = !ev.target.checked; });
   $("#publishOk").addEventListener("click", confirmPublish);
