@@ -532,7 +532,7 @@ async function openSubmission(id, el) {
   try {
     const data = await api.submission(id);
     if (document.body.dataset.view !== "home") return; // 使用者已離開
-    showResult(data, { shared: typeof data?.shared === "boolean" ? data.shared : !!h?.shared });
+    showResult(data, { shared: typeof data?.shared === "boolean" ? data.shared : !!h?.shared, fromHistory: true });
   } catch (e) {
     toast(e.message || "讀取紀錄失敗，請稍後再試。");
   } finally {
@@ -731,6 +731,19 @@ async function submit() {
   }
 }
 
+function reanalyze() {
+  const data = state.result;
+  if (!data || state.submitting) return;
+  state.current = data.stimulus;
+  // state.items 是「最新的在前面」，submit() 會再反轉回作答順序
+  state.items = (data.associations || [])
+    .map((a) => ({ text: a.text, note: a.note || "", open: false }))
+    .reverse();
+  state.startedAt = Date.now();
+  state.timeUp = true;
+  submit();
+}
+
 function backToAnswer() {
   // 保留已輸入的答案，計時停止，讓使用者直接重送
   state.timeUp = true;
@@ -794,10 +807,12 @@ const DEFAULT_INTERP = {
   suggestions: ["點星星看看聯想橋，想想看還有哪些方向沒有走過。"],
 };
 
-async function showResult(data, { shared = false } = {}) {
+async function showResult(data, { shared = false, fromHistory = false } = {}) {
   state.result = data;
   state.resultShared = shared;
   show("result");
+  // 重看舊紀錄時，可以用最新規則重跑同一批答案（不用重打）
+  $("#reanalyzeBtn").hidden = !fromHistory;
 
   const interp = data.interpretation || DEFAULT_INTERP;
   $("#headline").textContent = interp.headline;
@@ -959,6 +974,7 @@ function bind() {
   $("#consentCheck").addEventListener("change", (ev) => { $("#consentBtn").disabled = !ev.target.checked; });
   $("#consentBtn").addEventListener("click", onConsent);
   $("#againBtn").addEventListener("click", goHome);
+  $("#reanalyzeBtn").addEventListener("click", reanalyze);
 
   $("#publishCheck").addEventListener("change", (ev) => { $("#publishOk").disabled = !ev.target.checked; });
   $("#publishOk").addEventListener("click", confirmPublish);
