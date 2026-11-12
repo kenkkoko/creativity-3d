@@ -277,3 +277,38 @@ def create_stimulus(svc: Services, word: str, session_id: str) -> tuple[Stimulus
         raise AppError(ErrorCode.blocked_input, f"這個詞不適合當題目：{check.reason}")
 
     return svc.store.create_stimulus(word, session_id), True
+
+
+def refresh_positions(svc: Services, response: AnalysisResponse) -> AnalysisResponse:
+    """重看舊紀錄時，用目前最新的投影重算星星位置與背景星雲（例如投影從 v1 升級到 v2 後）。
+    距離、合理性、分數都不變，只改 3D 座標。任何一步失敗就回傳原結果。"""
+    try:
+        stim = response.stimulus
+        projector = ensure_projector(svc, stim)
+        vecs = svc.store.answer_vectors(response.submission_id)
+        if projector is None or vecs is None or len(vecs) != len(response.associations):
+            return response
+        terms = sorted({t for a in response.associations for t in a.bridge})
+        term_pos = {}
+        if terms:
+            try:
+                tv = svc.embedder.embed(terms)
+                td = scoring.semantic_distances(projector.stim_vec.astype(np.float32), tv)
+                term_pos = {t: projector.project(tv[k], float(td[k])) for k, t in enumerate(terms)}
+            except ProviderError:
+                pass
+        assocs = [
+            a.model_copy(update={
+                "position": projector.project(vecs[i], a.distance),
+                "bridge_positions": [term_pos[t] for t in a.bridge] if all(t in term_pos for t in a.bridge) else [],
+            })
+            for i, a in enumerate(response.associations)
+        ]
+        return response.model_copy(update={
+            "associations": assocs,
+            "cloud": svc.store.cloud_points(stim.id),
+            "pool": svc.store.pool_stats(stim.id, svc.settings.percentile_min_users),
+        })
+    except Exception:  # noqa: BLE001
+        log.exception("重算舊紀錄位置失敗：%s", response.submission_id)
+        return response
