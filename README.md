@@ -8,7 +8,6 @@
 
 ![Demo：旋轉星圖、點星星看聯想橋](docs/images/demo.gif)
 
-▶ [觀看完整 Demo 影片（MP4，22 秒）](docs/demo.mp4)
 
 ## 功能
 
