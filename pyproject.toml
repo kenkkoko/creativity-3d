@@ -3,7 +3,7 @@ name = "creativity3d"
 version = "0.1.0"
 description = "在 3D 空間中視覺化自己的創造力"
 readme = "README.md"
-license = "MIT"
+license = "PolyForm-Noncommercial-1.0.0"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.162.5",
